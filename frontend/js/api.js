@@ -1,5 +1,5 @@
 /* ── API Helper ── */
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://electronics-club-itsh.onrender.com/api';
 
 const api = {
   getToken: () => localStorage.getItem('ecms_token'),
