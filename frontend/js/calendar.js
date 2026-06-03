@@ -14,6 +14,13 @@ const TYPE_COLORS = {
   meeting: '#0288D1', other: '#7B7B7B'
 };
 
+document.getElementById('ev-type-select').addEventListener('change', (e) => {
+  const type = e.target.value;
+  if (TYPE_COLORS[type]) {
+    document.getElementById('ev-color').value = TYPE_COLORS[type];
+  }
+});
+
 // ── Type filter chips ──
 document.getElementById('type-filters').addEventListener('click', (e) => {
   const chip = e.target.closest('.type-chip');
@@ -199,7 +206,7 @@ function openAddEventModal() {
   document.getElementById('ev-start').value = toLocalISO(now);
   document.getElementById('ev-end').value = toLocalISO(end);
   document.getElementById('ev-type-select').value = 'club';
-  document.getElementById('ev-color').value = '#0288D1';
+  document.getElementById('ev-color').value = TYPE_COLORS['club'];
   document.getElementById('ev-location-input').value = '';
   document.getElementById('ev-desc-input').value = '';
   openModal('edit-event-modal');

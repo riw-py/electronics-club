@@ -1,78 +1,181 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>สมัครสมาชิก — ชมรมวิชาชีพอิเล็กทรอนิกส์</title>
-  <meta name="description" content="สมัครสมาชิกชมรมวิชาชีพอิเล็กทรอนิกส์">
+  <title>สมัครสมาชิก — ชมรมอิเล็กทรอนิกส์</title>
+  <meta name="description" content="สมัครสมาชิกชมรมอิเล็กทรอนิกส์">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="css/main.css">
   <style>
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
     .auth-bg {
-      position: fixed; inset: 0; z-index: -1;
-      background: radial-gradient(ellipse at 20% 50%, rgba(21,101,192,0.15) 0%, transparent 50%),
-                  radial-gradient(ellipse at 80% 20%, rgba(2,136,209,0.1) 0%, transparent 40%),
-                  var(--bg-base);
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(ellipse at 20% 50%, rgba(21, 101, 192, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(2, 136, 209, 0.1) 0%, transparent 40%),
+        var(--bg-base);
     }
+
     .auth-card {
-      width: 100%; max-width: 520px;
-      background: var(--bg-card); border: 1px solid var(--border);
+      width: 100%;
+      max-width: 520px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-xl), 0 0 60px rgba(21,101,192,0.15);
-      overflow: hidden; animation: slideUp 0.5s ease forwards;
+      box-shadow: var(--shadow-xl), 0 0 60px rgba(21, 101, 192, 0.15);
+      overflow: hidden;
+      animation: slideUp 0.5s ease forwards;
     }
+
     .auth-header {
       background: linear-gradient(135deg, #0A1628, #112240);
-      padding: 1.75rem 2rem 1.5rem; text-align: center;
-      border-bottom: 1px solid var(--border); position: relative;
+      padding: 1.75rem 2rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
     }
+
     .auth-header::after {
-      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
       background: linear-gradient(90deg, var(--primary), var(--sky), var(--accent));
     }
+
     .auth-logo {
-      width: 56px; height: 56px; margin: 0 auto 0.75rem;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 0.75rem;
       background: linear-gradient(135deg, var(--primary), var(--sky));
-      border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      font-size: 1.75rem; box-shadow: var(--glow-primary);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      box-shadow: var(--glow-primary);
     }
-    .auth-title    { font-size: 1.25rem; font-weight: 800; }
-    .auth-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
-    .auth-body { padding: 1.5rem 2rem 2rem; }
-    .input-icon-wrap { position: relative; }
+
+    .auth-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .auth-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .auth-body {
+      padding: 1.5rem 2rem 2rem;
+    }
+
+    .input-icon-wrap {
+      position: relative;
+    }
+
     .input-icon-wrap .icon {
-      position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
-      color: var(--text-muted); pointer-events: none;
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
     }
-    .input-icon-wrap .form-control { padding-left: 2.6rem; }
+
+    .input-icon-wrap .form-control {
+      padding-left: 2.6rem;
+    }
+
     .btn-auth {
-      width: 100%; padding: 0.85rem;
+      width: 100%;
+      padding: 0.85rem;
       background: linear-gradient(135deg, var(--primary), var(--sky));
-      color: #fff; border: none; border-radius: var(--radius);
-      font-family: inherit; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; transition: all var(--transition); margin-top: 0.5rem;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition);
+      margin-top: 0.5rem;
     }
-    .btn-auth:hover { box-shadow: 0 6px 30px rgba(21,101,192,0.6); transform: translateY(-1px); }
-    .auth-footer { text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted); }
-    .auth-footer a { color: var(--sky-light); font-weight: 600; }
+
+    .btn-auth:hover {
+      box-shadow: 0 6px 30px rgba(21, 101, 192, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .auth-footer a {
+      color: var(--sky-light);
+      font-weight: 600;
+    }
+
     .auth-error {
-      background: rgba(211,47,47,0.1); border: 1px solid rgba(211,47,47,0.3);
-      border-radius: var(--radius); padding: 0.75rem 1rem;
-      color: var(--danger-light); font-size: 0.875rem; display: none; margin-bottom: 1rem;
+      background: rgba(211, 47, 47, 0.1);
+      border: 1px solid rgba(211, 47, 47, 0.3);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      color: var(--danger-light);
+      font-size: 0.875rem;
+      display: none;
+      margin-bottom: 1rem;
     }
-    .auth-error.show { display: block; animation: slideUp 0.3s ease; }
+
+    .auth-error.show {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+
     .step-indicator {
-      display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
     }
+
     .step-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--border); transition: all var(--transition);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all var(--transition);
     }
-    .step-dot.active { background: var(--sky); box-shadow: 0 0 8px rgba(2,136,209,0.6); width: 24px; border-radius: 4px; }
-    .step-dot.done   { background: var(--success); }
+
+    .step-dot.active {
+      background: var(--sky);
+      box-shadow: 0 0 8px rgba(2, 136, 209, 0.6);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .step-dot.done {
+      background: var(--success);
+    }
   </style>
 </head>
+
 <body>
   <div class="auth-bg"></div>
   <div id="toast-container"></div>
@@ -173,9 +276,9 @@
 
     // Step navigation
     document.getElementById('next-btn').addEventListener('click', () => {
-      const sid   = document.getElementById('student_id').value.trim();
-      const name  = document.getElementById('full_name').value.trim();
-      const cls   = document.getElementById('classroom').value.trim();
+      const sid = document.getElementById('student_id').value.trim();
+      const name = document.getElementById('full_name').value.trim();
+      const cls = document.getElementById('classroom').value.trim();
       if (!sid || !name || !cls) { showError('กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
       hideError();
       document.getElementById('step1').classList.add('hidden');
@@ -198,7 +301,7 @@
       e.preventDefault();
       hideError();
       const password = document.getElementById('password').value;
-      const confirm  = document.getElementById('confirm_password').value;
+      const confirm = document.getElementById('confirm_password').value;
       if (password !== confirm) { showError('รหัสผ่านไม่ตรงกัน'); return; }
       if (password.length < 6) { showError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
 
@@ -208,10 +311,10 @@
       try {
         const res = await api.post('/auth/register', {
           student_id: document.getElementById('student_id').value.trim(),
-          full_name:  document.getElementById('full_name').value.trim(),
-          classroom:  document.getElementById('classroom').value.trim(),
-          phone:      document.getElementById('phone').value.trim(),
-          email:      document.getElementById('email').value.trim(),
+          full_name: document.getElementById('full_name').value.trim(),
+          classroom: document.getElementById('classroom').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          email: document.getElementById('email').value.trim(),
           password
         });
         api.setToken(res.token);
@@ -225,4 +328,5 @@
     });
   </script>
 </body>
+
 </html>
