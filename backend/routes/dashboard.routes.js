@@ -11,7 +11,7 @@ router.get('/stats', authenticate, async (req, res) => {
     const [eventsCount]    = await execute('SELECT COUNT(*) as count FROM events WHERE start_datetime >= CURRENT_TIMESTAMP');
     const [documentsCount] = await execute('SELECT COUNT(*) as count FROM documents');
     const [recentNews]     = await execute(
-      `SELECT n.id, n.title, n.category, n.view_count, n.created_at, u.full_name as author
+      `SELECT n.id, n.title, n.excerpt, n.image_url, n.category, n.view_count, n.created_at, u.full_name as author
        FROM news n JOIN users u ON n.author_id = u.id ORDER BY n.created_at DESC LIMIT 5`
     );
     const [upcomingEvents] = await execute(
