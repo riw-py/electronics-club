@@ -22,6 +22,7 @@ app.use('/api/news',      require('./routes/news.routes'));
 app.use('/api/events',    require('./routes/events.routes'));
 app.use('/api/documents', require('./routes/documents.routes'));
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
+app.use('/api/garbage',   require('./routes/garbage.routes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

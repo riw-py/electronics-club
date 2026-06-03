@@ -46,5 +46,6 @@ const uploadNewsImage   = multer({ storage: createStorage('news'),      fileFilt
 const uploadDocument    = multer({ storage: createStorage('documents'), fileFilter: documentFilter, limits: { fileSize: MAX_SIZE } });
 const uploadAvatar      = multer({ storage: createStorage('avatars'),   fileFilter: imageFilter,    limits: { fileSize: 2 * 1024 * 1024 } });
 const uploadProjectFile = multer({ storage: createStorage('projects'),  fileFilter: documentFilter, limits: { fileSize: MAX_SIZE } });
+const uploadGarbage     = multer({ storage: createStorage('garbage'),   fileFilter: imageFilter,    limits: { fileSize: MAX_SIZE } });
 
-module.exports = { uploadNewsImage, uploadDocument, uploadAvatar, uploadProjectFile };
+module.exports = { uploadNewsImage, uploadDocument, uploadAvatar, uploadProjectFile, uploadGarbage };

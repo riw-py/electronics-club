@@ -21,10 +21,13 @@ function injectLayout() {
           <span class="nav-item-icon"><i class="fa-solid fa-house"></i></span> หน้าหลัก
         </a>
         <a href="news.html"      class="nav-item" data-page="news.html">
-          <span class="nav-item-icon"><i class="fa-solid fa-newspaper"></i></span> ข่าวสาร
+          <span class="nav-item-icon"><i class="fa-regular fa-newspaper"></i></span> ข่าวสาร
         </a>
         <a href="events.html"    class="nav-item" data-page="events.html">
           <span class="nav-item-icon"><i class="fa-regular fa-calendar-days"></i></span> ปฏิทินกิจกรรม
+        </a>
+        <a href="garbage.html"   class="nav-item" data-page="garbage.html">
+          <span class="nav-item-icon"><i class="fa-solid fa-trash-can"></i></span> เวรทิ้งขยะ
         </a>
         <a href="documents.html" class="nav-item" data-page="documents.html" data-role="admin">
           <span class="nav-item-icon"><i class="fa-regular fa-folder-open"></i></span> คลังเอกสาร

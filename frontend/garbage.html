@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เวรทิ้งขยะ — ชมรมอิเล็กทรอนิกส์</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .tab-header {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: 0.75rem 1rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: 0.3s;
+    }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .duty-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      flex: 1;
+    }
+    .duty-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .duty-room { font-size: 2rem; font-weight: 700; color: var(--primary); }
+    
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .upload-zone:hover { border-color: var(--primary); color: var(--primary); }
+    .upload-zone input { display: none; }
+    
+    .report-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .report-img { width: 100%; height: 200px; object-fit: cover; }
+    .report-info { padding: 1rem; }
+  </style>
+</head>
+
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> เวรทิ้งขยะ</div>
+        <h1>ระบบบริหารจัดการเวรทิ้งขยะ</h1>
+        <p style="color:var(--text-secondary)">พื้นที่รับผิดชอบ: ลานกิจกรรม</p>
+      </div>
+    </div>
+
+    <div class="tab-header" id="garbage-tabs">
+      <button class="tab-btn active" data-tab="tab-dashboard"><i class="fa-solid fa-house"></i> เวรวันนี้ & ส่งงาน</button>
+      <button class="tab-btn" data-tab="tab-schedule"><i class="fa-regular fa-calendar-days"></i> ตารางเวร</button>
+      <button class="tab-btn" data-tab="tab-reports" id="tab-reports-btn" style="display:none"><i class="fa-solid fa-clipboard-check"></i> ตรวจงาน</button>
+      <button class="tab-btn" data-tab="tab-scoreboard"><i class="fa-solid fa-ranking-star"></i> จัดอันดับความรับผิดชอบ</button>
+    </div>
+
+    <!-- TAB 1: Dashboard & Upload -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div class="card" style="margin-bottom:1.5rem">
+        <h3 style="margin-bottom:1rem">เวรประจำวันนี้</h3>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap" id="today-duties">
+          <div style="text-align:center;width:100%;padding:2rem"><div class="spinner" style="margin:auto"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:1rem">ส่งงาน (อัปโหลดรูปภาพ)</h3>
+        <div class="form-group">
+          <label class="form-label">ห้องของคุณ</label>
+          <select id="report-classroom" class="form-control" style="max-width:200px">
+            <option value="ชอ.1/1">ชอ.1/1</option>
+            <option value="ชอ.1/2">ชอ.1/2</option>
+            <option value="ชอ.2/1">ชอ.2/1</option>
+            <option value="ชอ.2/2">ชอ.2/2</option>
+            <option value="ชอ.3/1">ชอ.3/1</option>
+            <option value="ชอ.3/2">ชอ.3/2</option>
+            <option value="สทอ.1/1">สทอ.1/1</option>
+            <option value="สทอ.1/2">สทอ.1/2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เลือกรอบเวร (ถ้ามี)</label>
+          <select id="report-duty-id" class="form-control" style="max-width:300px">
+            <option value="">-- ไม่ระบุ (ช่วยงานพิเศษ) --</option>
+          </select>
+        </div>
+        <div class="upload-zone" id="garbage-upload-zone" onclick="document.getElementById('garbage-file').click()">
+          <i class="fa-solid fa-camera" style="font-size:2rem;margin-bottom:0.5rem"></i>
+          <div>คลิกเพื่อเลือกรูปภาพ หรือ ลากไฟล์มาวางที่นี่</div>
+          <div id="garbage-file-name" style="margin-top:0.5rem;font-weight:bold;color:var(--primary)"></div>
+          <input type="file" id="garbage-file" accept="image/*">
+        </div>
+        <button class="btn btn-primary" style="margin-top:1rem" id="submit-report-btn" onclick="submitReport()"><i class="fa-solid fa-paper-plane"></i> ส่งงาน</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: Schedule -->
+    <div class="tab-content" id="tab-schedule">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">ตารางเวรทั้งหมด</h3>
+          <button class="btn btn-primary btn-sm" id="add-duty-btn" style="display:none" onclick="openModal('add-duty-modal')"><i class="fa-solid fa-plus"></i> เพิ่มเวร</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>วันที่</th>
+                <th>รอบเวร</th>
+                <th>ห้องที่รับผิดชอบ</th>
+                <th class="admin-only" style="display:none">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="schedule-tbody">
+              <tr><td colspan="4" style="text-align:center">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Reports (Admin only) -->
+    <div class="tab-content" id="tab-reports">
+      <div class="card">
+        <h3 style="margin-bottom:1rem">ตรวจงานที่ส่งเข้ามา</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:1rem" id="reports-grid">
+          <div style="grid-column:1/-1;text-align:center">กำลังโหลด...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Scoreboard -->
+    <div class="tab-content" id="tab-scoreboard">
+      <div class="card">
+        <h3 style="margin-bottom:1rem">อันดับคะแนนความรับผิดชอบ</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1rem">
+          * คะแนนเริ่มต้นที่ 0 หากไม่ทำเวรจะถูกบวกคะแนน (ยิ่งคะแนนน้อย ยิ่งดี)
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>อันดับ</th>
+                <th>ห้องเรียน</th>
+                <th>หน่วยความรับผิดชอบ (คะแนน)</th>
+              </tr>
+            </thead>
+            <tbody id="scoreboard-tbody">
+              <tr><td colspan="3" style="text-align:center">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Add Duty Modal -->
+  <div class="modal-overlay" id="add-duty-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">จัดเวรทิ้งขยะ</span>
+        <button class="modal-close" onclick="closeModal('add-duty-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">วันที่</label>
+          <input type="date" id="duty-date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">รอบเวลา</label>
+          <select id="duty-shift" class="form-control">
+            <option value="morning">เช้า (ก่อน 12:30)</option>
+            <option value="afternoon">บ่าย (ก่อน 15:30)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ห้องที่รับผิดชอบ</label>
+          <select id="duty-classroom" class="form-control">
+            <option value="ชอ.1/1">ชอ.1/1</option>
+            <option value="ชอ.1/2">ชอ.1/2</option>
+            <option value="ชอ.2/1">ชอ.2/1</option>
+            <option value="ชอ.2/2">ชอ.2/2</option>
+            <option value="ชอ.3/1">ชอ.3/1</option>
+            <option value="ชอ.3/2">ชอ.3/2</option>
+            <option value="สทอ.1/1">สทอ.1/1</option>
+            <option value="สทอ.1/2">สทอ.1/2</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('add-duty-modal')">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveDuty()"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/garbage.js"></script>
+</body>
+
+</html>
