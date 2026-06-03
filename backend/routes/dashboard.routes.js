@@ -3,8 +3,8 @@ const router = express.Router();
 const { execute } = require('../config/database');
 const { authenticate, authorize } = require('../middleware/auth');
 
-// GET /api/dashboard/stats — admin only
-router.get('/stats', authenticate, authorize('admin', 'committee'), async (req, res) => {
+// GET /api/dashboard/stats — all users
+router.get('/stats', authenticate, async (req, res) => {
   try {
     const [usersCount]     = await execute('SELECT COUNT(*) as count FROM users WHERE is_active = TRUE');
     const [newsCount]      = await execute('SELECT COUNT(*) as count FROM news WHERE is_published = TRUE');
