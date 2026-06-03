@@ -71,16 +71,22 @@ function renderNews(items, pagination) {
 
   const catColors = { announcement:'badge-red', activity:'badge-blue', achievement:'badge-yellow', general:'badge-gray' };
 
-  grid.innerHTML = items.map(n => `
+  grid.innerHTML = items.map(n => {
+    const cleanExcerpt = (n.excerpt || '').replace(/<[^>]*>?/gm, '');
+    const displayExcerpt = cleanExcerpt.substring(0, 100) + (cleanExcerpt.length > 100 ? '...' : '');
+    const imageUrl = n.image_url ? (n.image_url.startsWith('http') ? n.image_url : API_BASE.replace('/api', '') + n.image_url) : null;
+    
+    return `
     <div class="news-card animate-slide-up" data-id="${n.id}">
-      ${n.image_url
-        ? `<img src="${n.image_url}" class="news-card-img" alt="${escHtml(n.title)}" loading="lazy">`
+      ${imageUrl
+        ? `<img src="${imageUrl}" class="news-card-img" alt="${escHtml(n.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+           <div class="news-card-img-placeholder" style="display:none"><i class="fa-solid fa-newspaper"></i></div>`
         : `<div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>`
       }
       <div class="news-card-body">
         <div class="news-card-category">${NEWS_CATEGORIES[n.category] || n.category}</div>
         <h3 class="news-card-title truncate" title="${escHtml(n.title)}">${escHtml(n.title)}</h3>
-        <p class="news-card-excerpt">${escHtml((n.excerpt||'').substring(0,100))}${(n.excerpt||'').length > 100 ? '...' : ''}</p>
+        <p class="news-card-excerpt">${escHtml(displayExcerpt)}</p>
       </div>
       <div class="news-card-footer">
         <div style="display:flex;align-items:center;gap:0.4rem">
@@ -93,7 +99,8 @@ function renderNews(items, pagination) {
         </div>
       </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 
   renderPagination(document.getElementById('pagination-container'), pagination, (p) => {
     currentPage = p;
