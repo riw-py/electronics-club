@@ -12,7 +12,7 @@ const authenticate = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
 
     const [rows] = await execute(
-      'SELECT id, student_id, full_name, email, role, classroom, avatar FROM users WHERE id = ? AND is_active = 1',
+      'SELECT id, student_id, full_name, email, role, classroom, avatar FROM users WHERE id = ? AND is_active = TRUE',
       [decoded.id]
     );
     if (!rows.length) {
@@ -49,7 +49,7 @@ const optionalAuth = async (req, res, next) => {
       const token = authHeader.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
       const [rows] = await execute(
-        'SELECT id, student_id, full_name, email, role, classroom, avatar FROM users WHERE id = ? AND is_active = 1',
+        'SELECT id, student_id, full_name, email, role, classroom, avatar FROM users WHERE id = ? AND is_active = TRUE',
         [decoded.id]
       );
       if (rows.length) req.user = rows[0];
