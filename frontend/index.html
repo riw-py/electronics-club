@@ -347,20 +347,28 @@
         // Render news
         const newsGrid = document.getElementById('news-grid');
         if (res.data.recentNews?.length) {
-          newsGrid.innerHTML = res.data.recentNews.slice(0, 3).map(n => `
-          <div class="news-card animate-slide-up">
-            <div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>
-            <div class="news-card-body">
-              <div class="news-card-category">${NEWS_CATEGORIES[n.category] || n.category}</div>
-              <h3 class="news-card-title">${escHtml(n.title)}</h3>
-              <p class="news-card-excerpt">${escHtml(n.author)} • ${timeAgo(n.created_at)}</p>
-            </div>
-            <div class="news-card-footer">
-              <span><i class="fa-regular fa-eye"></i> ${n.view_count || 0}</span>
-              <a href="news.html#${n.id}" class="btn btn-ghost btn-sm">อ่านต่อ</a>
-            </div>
-          </div>
-        `).join('');
+          newsGrid.innerHTML = res.data.recentNews.slice(0, 3).map(n => {
+            const cleanExcerpt = (n.excerpt || '').replace(/<[^>]*>?/gm, '');
+            const displayExcerpt = cleanExcerpt.substring(0, 100) + (cleanExcerpt.length > 100 ? '...' : '');
+            const imageUrl = n.image_url ? (n.image_url.startsWith('http') ? n.image_url : API_BASE.replace('/api', '') + n.image_url) : null;
+            return `
+            <div class="news-card animate-slide-up">
+              ${imageUrl
+                ? `<img src="${imageUrl}" class="news-card-img" alt="${escHtml(n.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                   <div class="news-card-img-placeholder" style="display:none"><i class="fa-solid fa-newspaper"></i></div>`
+                : `<div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>`
+              }
+              <div class="news-card-body">
+                <div class="news-card-category">${NEWS_CATEGORIES[n.category] || n.category}</div>
+                <h3 class="news-card-title">${escHtml(n.title)}</h3>
+                <p class="news-card-excerpt">${escHtml(displayExcerpt)}</p>
+              </div>
+              <div class="news-card-footer">
+                <span style="font-size:0.75rem;color:var(--text-muted)">${timeAgo(n.created_at)}</span>
+                <a href="news.html" class="btn btn-ghost btn-sm">อ่านต่อ</a>
+              </div>
+            </div>`;
+          }).join('');
         } else {
           newsGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-newspaper"></i></div><h3>ยังไม่มีข่าวสาร</h3></div>';
         }
@@ -393,19 +401,28 @@
           const nr = await api.get('/news?limit=3&published=true');
           const newsGrid = document.getElementById('news-grid');
           if (nr.data?.length) {
-            newsGrid.innerHTML = nr.data.map(n => `
-            <div class="news-card animate-slide-up">
-              ${n.image_url ? `<img src="${n.image_url}" class="news-card-img" alt="${escHtml(n.title)}">` : '<div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>'}
-              <div class="news-card-body">
-                <div class="news-card-category">${NEWS_CATEGORIES[n.category] || n.category}</div>
-                <h3 class="news-card-title">${escHtml(n.title)}</h3>
-                <p class="news-card-excerpt">${escHtml(n.excerpt || '').substring(0, 100)}...</p>
-              </div>
-              <div class="news-card-footer">
-                <span style="font-size:0.75rem;color:var(--text-muted)">${timeAgo(n.created_at)}</span>
-                <a href="news.html" class="btn btn-ghost btn-sm">อ่านต่อ</a>
-              </div>
-            </div>`).join('');
+            newsGrid.innerHTML = nr.data.map(n => {
+              const cleanExcerpt = (n.excerpt || '').replace(/<[^>]*>?/gm, '');
+              const displayExcerpt = cleanExcerpt.substring(0, 100) + (cleanExcerpt.length > 100 ? '...' : '');
+              const imageUrl = n.image_url ? (n.image_url.startsWith('http') ? n.image_url : API_BASE.replace('/api', '') + n.image_url) : null;
+              return `
+              <div class="news-card animate-slide-up">
+                ${imageUrl
+                  ? `<img src="${imageUrl}" class="news-card-img" alt="${escHtml(n.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                     <div class="news-card-img-placeholder" style="display:none"><i class="fa-solid fa-newspaper"></i></div>`
+                  : `<div class="news-card-img-placeholder"><i class="fa-solid fa-newspaper"></i></div>`
+                }
+                <div class="news-card-body">
+                  <div class="news-card-category">${NEWS_CATEGORIES[n.category] || n.category}</div>
+                  <h3 class="news-card-title">${escHtml(n.title)}</h3>
+                  <p class="news-card-excerpt">${escHtml(displayExcerpt)}</p>
+                </div>
+                <div class="news-card-footer">
+                  <span style="font-size:0.75rem;color:var(--text-muted)">${timeAgo(n.created_at)}</span>
+                  <a href="news.html" class="btn btn-ghost btn-sm">อ่านต่อ</a>
+                </div>
+              </div>`;
+            }).join('');
           }
         } catch (_) { }
       }
