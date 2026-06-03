@@ -14,7 +14,10 @@
       gap: 1rem;
       border-bottom: 1px solid var(--border);
       margin-bottom: 1.5rem;
+      overflow-x: auto;
+      white-space: nowrap;
     }
+    .tab-header::-webkit-scrollbar { display: none; } /* Hide scrollbar for cleaner look */
     .tab-btn {
       padding: 0.75rem 1rem;
       background: none;
@@ -40,6 +43,7 @@
       padding: 1.5rem;
       text-align: center;
       flex: 1;
+      min-width: 250px;
     }
     .duty-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
     .duty-room { font-size: 2rem; font-weight: 700; color: var(--primary); }
