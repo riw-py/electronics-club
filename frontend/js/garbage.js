@@ -55,15 +55,29 @@ async function loadDashboard() {
       `;
     }).join('');
     
-    // Auto select user classroom if available
-    if (user && user.classroom) {
-      document.getElementById('report-classroom').value = user.classroom;
+      // Auto select user classroom if available
+      if (user && user.classroom) {
+        document.getElementById('report-classroom').value = user.classroom;
+      }
+  
+      // Render Today's Reports
+      const reportsContainer = document.getElementById('today-reports');
+      if (reportsContainer) {
+        if (!res.data.reports || res.data.reports.length === 0) {
+          reportsContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted)">ยังไม่มีประวัติการส่งงานในวันนี้</div>';
+        } else {
+          // Add to allReports for receipt viewing
+          res.data.reports.forEach(r => {
+            if (!allReports.find(x => x.id === r.id)) allReports.push(r);
+          });
+          reportsContainer.innerHTML = res.data.reports.map(r => createReportCardHTML(r)).join('');
+        }
+      }
+  
+    } catch (err) {
+      console.error(err);
     }
-
-  } catch (err) {
-    console.error(err);
   }
-}
 
 // Load Schedule
 async function loadSchedule() {
@@ -116,59 +130,69 @@ async function loadScoreboard() {
   }
 }
 
+let allReports = [];
+
+function createReportCardHTML(r) {
+  const submittedAt = new Date(r.submitted_at);
+  const timeStr = submittedAt.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+  const dateStr = submittedAt.toLocaleDateString('th-TH');
+  
+  // Check if late
+  let isLate = false;
+  if (r.shift === 'morning' && (submittedAt.getHours() > 12 || (submittedAt.getHours() === 12 && submittedAt.getMinutes() > 30))) isLate = true;
+  if (r.shift === 'afternoon' && (submittedAt.getHours() > 15 || (submittedAt.getHours() === 15 && submittedAt.getMinutes() > 30))) isLate = true;
+
+  const lateBadge = isLate ? '<span class="badge badge-red" style="position:absolute;top:10px;right:10px">ส่งช้า</span>' : '';
+  
+  let statusBadge = '';
+  if (r.status === 'pending') statusBadge = '<span class="badge badge-yellow">รอตรวจ</span>';
+  else if (r.status === 'completed') statusBadge = '<span class="badge badge-green">ผ่าน</span>';
+  else if (r.status === 'not_clean') statusBadge = '<span class="badge badge-red">ไม่เรียบร้อย (+0.5)</span>';
+  else if (r.status === 'extra_help') statusBadge = '<span class="badge badge-blue">ช่วยพิเศษ (-0.5)</span>';
+  else if (r.status === 'missed') statusBadge = '<span class="badge badge-gray">ขาดเวร (+1.0)</span>';
+
+  return `
+    <div class="report-card" style="position:relative">
+      ${lateBadge}
+      <img src="${API_BASE.replace('/api', '') + r.image_url}" class="report-img" onclick="window.open(this.src)" style="cursor:pointer" onerror="this.src='img/placeholder.png'">
+      <div class="report-info">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+          <span style="font-weight:bold">${r.classroom}</span>
+          ${statusBadge}
+        </div>
+        <div class="text-muted fs-sm" style="margin-bottom:0.5rem"><i class="fa-regular fa-clock"></i> ${dateStr} เวลา ${timeStr}</div>
+        <div class="fs-sm" style="margin-bottom:0.5rem">ส่งโดย: ${r.reporter_name}</div>
+        <button class="btn btn-ghost btn-sm" style="width:100%" onclick="showReceipt(${r.id})"><i class="fa-solid fa-receipt"></i> ดูใบเสร็จ</button>
+        
+        ${r.status === 'pending' && user && (user.role === 'admin' || user.role === 'committee') ? `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:1rem">
+            <button class="btn btn-primary btn-sm" onclick="updateReport(${r.id}, 'completed')">ผ่าน</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="updateReport(${r.id}, 'not_clean')">ไม่เรียบร้อย</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--primary)" onclick="updateReport(${r.id}, 'extra_help')">ช่วยพิเศษ</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--text-muted)" onclick="updateReport(${r.id}, 'missed')">ขาดเวร</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
 // Load Reports for Admin
 async function loadReports() {
   const grid = document.getElementById('reports-grid');
   try {
     const res = await api.get('/garbage/reports');
+    // merge with allReports
+    res.data.forEach(r => {
+      if (!allReports.find(x => x.id === r.id)) allReports.push(r);
+    });
+    
     if (res.data.length === 0) {
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center">ไม่มีประวัติการส่งงาน</div>';
       return;
     }
     
-    grid.innerHTML = res.data.map(r => {
-      const submittedAt = new Date(r.submitted_at);
-      const timeStr = submittedAt.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
-      const dateStr = submittedAt.toLocaleDateString('th-TH');
-      
-      // Check if late
-      let isLate = false;
-      if (r.shift === 'morning' && (submittedAt.getHours() > 12 || (submittedAt.getHours() === 12 && submittedAt.getMinutes() > 30))) isLate = true;
-      if (r.shift === 'afternoon' && (submittedAt.getHours() > 15 || (submittedAt.getHours() === 15 && submittedAt.getMinutes() > 30))) isLate = true;
-
-      const lateBadge = isLate ? '<span class="badge badge-red" style="position:absolute;top:10px;right:10px">ส่งช้า</span>' : '';
-      
-      let statusBadge = '';
-      if (r.status === 'pending') statusBadge = '<span class="badge badge-yellow">รอตรวจ</span>';
-      else if (r.status === 'completed') statusBadge = '<span class="badge badge-green">ผ่าน</span>';
-      else if (r.status === 'not_clean') statusBadge = '<span class="badge badge-red">ไม่เรียบร้อย (+0.5)</span>';
-      else if (r.status === 'extra_help') statusBadge = '<span class="badge badge-blue">ช่วยพิเศษ (-0.5)</span>';
-      else if (r.status === 'missed') statusBadge = '<span class="badge badge-gray">ขาดเวร (+1.0)</span>';
-
-      return `
-        <div class="report-card" style="position:relative">
-          ${lateBadge}
-          <img src="${API_BASE.replace('/api', '') + r.image_url}" class="report-img" onclick="window.open(this.src)" style="cursor:pointer" onerror="this.src='img/placeholder.png'">
-          <div class="report-info">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
-              <span style="font-weight:bold">${r.classroom}</span>
-              ${statusBadge}
-            </div>
-            <div class="text-muted fs-sm" style="margin-bottom:0.5rem"><i class="fa-regular fa-clock"></i> ${dateStr} เวลา ${timeStr}</div>
-            <div class="fs-sm">ส่งโดย: ${r.reporter_name}</div>
-            
-            ${r.status === 'pending' && user && (user.role === 'admin' || user.role === 'committee') ? `
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:1rem">
-                <button class="btn btn-primary btn-sm" onclick="updateReport(${r.id}, 'completed')">ผ่าน</button>
-                <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="updateReport(${r.id}, 'not_clean')">ไม่เรียบร้อย</button>
-                <button class="btn btn-ghost btn-sm" style="color:var(--primary)" onclick="updateReport(${r.id}, 'extra_help')">ช่วยพิเศษ</button>
-                <button class="btn btn-ghost btn-sm" style="color:var(--text-muted)" onclick="updateReport(${r.id}, 'missed')">ขาดเวร</button>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
+    grid.innerHTML = res.data.map(r => createReportCardHTML(r)).join('');
   } catch (err) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:red">โหลดข้อมูลไม่สำเร็จ</div>';
   }
@@ -185,6 +209,13 @@ async function submitReport() {
   formData.append('classroom', document.getElementById('report-classroom').value);
   const dutyId = document.getElementById('report-duty-id').value;
   if (dutyId) formData.append('duty_id', dutyId);
+  
+  const coworkers = [
+    document.getElementById('coworker-1').value.trim(),
+    document.getElementById('coworker-2').value.trim(),
+    document.getElementById('coworker-3').value.trim()
+  ].filter(c => c !== '');
+  if (coworkers.length > 0) formData.append('co_workers', JSON.stringify(coworkers));
   
   try {
     const token = localStorage.getItem('token');
@@ -248,6 +279,58 @@ async function updateReport(id, status) {
   } catch (err) {
     showToast('เกิดข้อผิดพลาด', 'error');
   }
+}
+
+function showReceipt(id) {
+  const r = allReports.find(x => x.id === id);
+  if (!r) return;
+  
+  const submittedAt = new Date(r.submitted_at);
+  
+  document.getElementById('rec-id').textContent = 'RC-' + String(r.id).padStart(5, '0');
+  document.getElementById('rec-date').textContent = submittedAt.toLocaleDateString('th-TH');
+  document.getElementById('rec-time').textContent = submittedAt.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+  document.getElementById('rec-room').textContent = r.classroom;
+  document.getElementById('rec-shift').textContent = r.shift === 'morning' ? 'เช้า' : (r.shift === 'afternoon' ? 'บ่าย' : 'ช่วยงานพิเศษ');
+  
+  document.getElementById('rec-main-name').textContent = '1. ' + r.reporter_name + ' (ผู้ส่ง)';
+  
+  let coworkersHtml = '';
+  if (r.co_workers) {
+    try {
+      const cw = JSON.parse(r.co_workers);
+      cw.forEach((name, idx) => {
+        coworkersHtml += `<div>${idx + 2}. ${name}</div>`;
+      });
+    } catch(e){}
+  }
+  document.getElementById('rec-coworkers').innerHTML = coworkersHtml;
+  
+  let statusText = 'รอตรวจสอบ';
+  let statusColor = 'var(--text-muted)';
+  if (r.status === 'completed') { statusText = 'ผ่าน'; statusColor = 'var(--success)'; }
+  else if (r.status === 'not_clean') { statusText = 'ไม่เรียบร้อย'; statusColor = 'var(--danger)'; }
+  else if (r.status === 'extra_help') { statusText = 'ช่วยพิเศษ'; statusColor = 'var(--primary)'; }
+  else if (r.status === 'missed') { statusText = 'ขาดเวร'; statusColor = 'var(--danger)'; }
+  
+  document.getElementById('rec-status').textContent = statusText;
+  document.getElementById('rec-status').style.color = statusColor;
+  
+  openModal('receipt-modal');
+}
+
+function printReceipt() {
+  const content = document.getElementById('receipt-content').outerHTML;
+  const originalBody = document.body.innerHTML;
+  
+  document.body.innerHTML = `
+    <div style="display:flex;justify-content:center;align-items:flex-start;padding:2rem;">
+      ${content}
+    </div>
+  `;
+  window.print();
+  document.body.innerHTML = originalBody;
+  window.location.reload(); // reload to reattach event listeners safely
 }
 
 document.addEventListener('DOMContentLoaded', () => {

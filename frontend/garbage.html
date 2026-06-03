@@ -68,6 +68,47 @@
     }
     .report-img { width: 100%; height: 200px; object-fit: cover; }
     .report-info { padding: 1rem; }
+    
+    /* Receipt Bill Style */
+    .receipt-bill {
+      background: #fff;
+      color: #333;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
+      font-family: 'Courier New', Courier, monospace, sans-serif;
+    }
+    .receipt-bill::before, .receipt-bill::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 10px;
+      background-size: 20px 20px;
+    }
+    .receipt-bill::before {
+      top: -5px;
+      background-image: radial-gradient(circle at 10px 0, transparent 10px, #fff 11px);
+    }
+    .receipt-bill::after {
+      bottom: -5px;
+      background-image: radial-gradient(circle at 10px 10px, transparent 10px, #fff 11px);
+    }
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px dashed #ccc;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+    .receipt-title { font-weight: bold; font-size: 1.5rem; margin: 0.5rem 0; }
+    .receipt-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .receipt-label { color: #666; }
+    .receipt-val { font-weight: bold; }
+    .dark-mode .receipt-bill { background: var(--bg-surface); color: var(--text-primary); }
+    .dark-mode .receipt-bill::before { background-image: radial-gradient(circle at 10px 0, transparent 10px, var(--bg-surface) 11px); }
+    .dark-mode .receipt-bill::after { background-image: radial-gradient(circle at 10px 10px, transparent 10px, var(--bg-surface) 11px); }
+    .dark-mode .receipt-header { border-color: var(--border); }
+    .dark-mode .receipt-label { color: var(--text-muted); }
   </style>
 </head>
 
@@ -122,6 +163,14 @@
             <option value="">-- ไม่ระบุ (ช่วยงานพิเศษ) --</option>
           </select>
         </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อผู้ร่วมทำเวร (ใส่เฉพาะชื่อ-สกุล ถ้ามี)</label>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <input type="text" id="coworker-1" class="form-control" placeholder="คนที่ 1 (ระบุชื่อ-สกุล)">
+            <input type="text" id="coworker-2" class="form-control" placeholder="คนที่ 2 (ระบุชื่อ-สกุล)">
+            <input type="text" id="coworker-3" class="form-control" placeholder="คนที่ 3 (ระบุชื่อ-สกุล)">
+          </div>
+        </div>
         <div class="upload-zone" id="garbage-upload-zone" onclick="document.getElementById('garbage-file').click()">
           <i class="fa-solid fa-camera" style="font-size:2rem;margin-bottom:0.5rem"></i>
           <div>คลิกเพื่อเลือกรูปภาพ หรือ ลากไฟล์มาวางที่นี่</div>
@@ -129,6 +178,13 @@
           <input type="file" id="garbage-file" accept="image/*">
         </div>
         <button class="btn btn-primary" style="margin-top:1rem" id="submit-report-btn" onclick="submitReport()"><i class="fa-solid fa-paper-plane"></i> ส่งงาน</button>
+      </div>
+
+      <div class="card" style="margin-top:1.5rem">
+        <h3 style="margin-bottom:1rem">ประวัติการส่งงานของคุณ (วันนี้)</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:1rem" id="today-reports">
+          <div style="grid-column:1/-1;text-align:center;color:var(--text-muted)">กำลังโหลด...</div>
+        </div>
       </div>
     </div>
 
@@ -229,6 +285,40 @@
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="closeModal('add-duty-modal')">ยกเลิก</button>
         <button class="btn btn-primary" onclick="saveDuty()"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal" style="max-width:400px;background:transparent;box-shadow:none">
+      <div class="receipt-bill" id="receipt-content">
+        <div class="receipt-header">
+          <div><i class="fa-solid fa-bolt" style="font-size:2rem;color:var(--accent)"></i></div>
+          <div class="receipt-title">ใบเสร็จเวรทิ้งขยะ</div>
+          <div>ชมรมอิเล็กทรอนิกส์ (ECMS)</div>
+        </div>
+        <div class="receipt-row"><span class="receipt-label">รหัสอ้างอิง:</span><span class="receipt-val" id="rec-id">RC-000</span></div>
+        <div class="receipt-row"><span class="receipt-label">วันที่ส่ง:</span><span class="receipt-val" id="rec-date">01/01/2026</span></div>
+        <div class="receipt-row"><span class="receipt-label">เวลา:</span><span class="receipt-val" id="rec-time">12:00</span></div>
+        <br>
+        <div class="receipt-row"><span class="receipt-label">พื้นที่:</span><span class="receipt-val">ลานกิจกรรม</span></div>
+        <div class="receipt-row"><span class="receipt-label">ห้องเรียน:</span><span class="receipt-val" id="rec-room">ชอ.1/1</span></div>
+        <div class="receipt-row"><span class="receipt-label">รอบเวร:</span><span class="receipt-val" id="rec-shift">เช้า</span></div>
+        <br>
+        <div style="border-bottom: 2px dashed #ccc; margin-bottom: 1rem; padding-bottom: 0.5rem">
+          <div style="color:var(--text-muted);margin-bottom:0.5rem;font-size:0.9rem">รายชื่อผู้ปฏิบัติงาน:</div>
+          <div class="receipt-val" id="rec-main-name" style="margin-bottom:0.25rem">-</div>
+          <div class="receipt-val" id="rec-coworkers" style="margin-bottom:0.25rem"></div>
+        </div>
+        <div class="receipt-row" style="font-size:1.1rem;margin-top:1rem">
+          <span class="receipt-label">สถานะ:</span>
+          <span class="receipt-val" id="rec-status" style="color:var(--primary)">รอตรวจสอบ</span>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:1rem">
+        <button class="btn btn-primary" onclick="printReceipt()"><i class="fa-solid fa-print"></i> พิมพ์ / บันทึกภาพ</button>
+        <button class="btn btn-ghost" onclick="closeModal('receipt-modal')" style="background:var(--bg-elevated);margin-left:0.5rem">ปิด</button>
       </div>
     </div>
   </div>

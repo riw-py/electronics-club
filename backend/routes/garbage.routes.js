@@ -61,14 +61,14 @@ router.delete('/schedule/:id', authenticate, authorize('admin', 'committee'), as
 router.post('/report', authenticate, uploadGarbage.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'กรุณาอัปโหลดรูปภาพ' });
-    const { duty_id, classroom } = req.body; // duty_id can be null if extra_help
+    const { duty_id, classroom, co_workers } = req.body; // duty_id can be null if extra_help
     
     const imageUrl = `/uploads/garbage/${req.file.filename}`;
     
     await executeInsert(
-      `INSERT INTO garbage_reports (duty_id, classroom, reported_by, image_url, status) 
-       VALUES (?, ?, ?, ?, 'pending')`,
-      [duty_id || null, classroom, req.user.id, imageUrl]
+      `INSERT INTO garbage_reports (duty_id, classroom, reported_by, image_url, status, co_workers) 
+       VALUES (?, ?, ?, ?, 'pending', ?)`,
+      [duty_id || null, classroom, req.user.id, imageUrl, co_workers || null]
     );
 
     res.json({ success: true, message: 'ส่งงานสำเร็จ' });
