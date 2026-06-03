@@ -1,4 +1,4 @@
-const user = requireRole();
+const user = requireAuth();
 
 // Tab switching
 document.querySelectorAll('.tab-btn').forEach(btn => {
