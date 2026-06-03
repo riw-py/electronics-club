@@ -91,9 +91,13 @@ router.post('/', authenticate, uploadDocument.single('file'), async (req, res) =
     if (!title) return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อเอกสาร' });
 
     const fileType = FILE_TYPE_MAP[req.file.mimetype] || 'FILE';
+    
+    // Fix multer latin1 to utf8 encoding for Thai filenames
+    const originalNameUtf8 = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+
     const newId = await executeInsert(
       'INSERT INTO documents (title, description, filename, original_name, file_type, file_size, category, uploaded_by) VALUES (?,?,?,?,?,?,?,?)',
-      [title, description || null, req.file.filename, req.file.originalname,
+      [title, description || null, req.file.filename, originalNameUtf8,
        fileType, req.file.size, category || 'other', req.user.id]
     );
     res.status(201).json({ success: true, message: 'อัปโหลดเอกสารสำเร็จ', id: newId });
