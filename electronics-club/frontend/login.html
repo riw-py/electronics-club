@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ — ชมรมวิชาชีพอิเล็กทรอนิกส์</title>
+  <meta name="description" content="เข้าสู่ระบบชมรมวิชาชีพอิเล็กทรอนิกส์">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+
+    /* Animated background */
+    .auth-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: radial-gradient(ellipse at 20% 50%, rgba(21,101,192,0.15) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(2,136,209,0.1) 0%, transparent 40%),
+                  radial-gradient(ellipse at 60% 80%, rgba(255,214,0,0.05) 0%, transparent 40%),
+                  var(--bg-base);
+    }
+    .auth-bg::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230288D1' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    /* Floating circuit nodes */
+    .node {
+      position: fixed; border-radius: 50%;
+      background: var(--sky); opacity: 0.12;
+      animation: float 6s ease-in-out infinite;
+    }
+    .node:nth-child(1) { width: 200px; height: 200px; top: 10%; left: 5%;  animation-delay: 0s; }
+    .node:nth-child(2) { width: 120px; height: 120px; top: 70%; right: 8%; animation-delay: 2s; background: var(--accent); }
+    .node:nth-child(3) { width: 80px;  height: 80px;  top: 40%; right: 20%;animation-delay: 4s; }
+
+    /* Auth card */
+    .auth-card {
+      width: 100%; max-width: 420px; margin: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl), 0 0 60px rgba(21,101,192,0.15);
+      overflow: hidden;
+      animation: slideUp 0.5s ease forwards;
+    }
+
+    /* Card header */
+    .auth-header {
+      background: linear-gradient(135deg, #0A1628, #112240);
+      padding: 2rem 2rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .auth-header::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--sky), var(--accent));
+    }
+    .auth-logo {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--primary), var(--sky));
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin: 0 auto 1rem;
+      box-shadow: var(--glow-primary);
+      animation: glow 3s ease-in-out infinite;
+    }
+    .auth-title    { font-size: 1.35rem; font-weight: 800; color: var(--text-primary); }
+    .auth-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    /* Card body */
+    .auth-body { padding: 1.75rem 2rem 2rem; }
+
+    /* Input with icon */
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .icon {
+      position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 1rem; pointer-events: none;
+    }
+    .input-icon-wrap .form-control { padding-left: 2.6rem; }
+    .input-icon-wrap .eye-toggle {
+      position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+      font-size: 1rem; transition: color var(--transition);
+    }
+    .input-icon-wrap .eye-toggle:hover { color: var(--text-primary); }
+
+    /* Submit btn */
+    .btn-auth {
+      width: 100%; padding: 0.85rem;
+      background: linear-gradient(135deg, var(--primary), var(--sky));
+      color: #fff; border: none; border-radius: var(--radius);
+      font-family: inherit; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: all var(--transition);
+      position: relative; overflow: hidden;
+    }
+    .btn-auth:hover { box-shadow: 0 6px 30px rgba(21,101,192,0.6); transform: translateY(-1px); }
+    .btn-auth::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+    }
+
+    /* Auth footer */
+    .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted); }
+    .auth-footer a { color: var(--sky-light); font-weight: 600; }
+    .auth-footer a:hover { color: var(--accent); }
+
+    /* Error message */
+    .auth-error {
+      background: rgba(211,47,47,0.1); border: 1px solid rgba(211,47,47,0.3);
+      border-radius: var(--radius); padding: 0.75rem 1rem;
+      color: var(--danger-light); font-size: 0.875rem;
+      display: none; margin-bottom: 1.25rem;
+    }
+    .auth-error.show { display: block; animation: slideUp 0.3s ease; }
+
+    /* Loading state */
+    .btn-auth .spinner-sm {
+      width: 18px; height: 18px; border-width: 2px;
+      border-color: rgba(255,255,255,0.3); border-top-color: #fff;
+      display: inline-block; vertical-align: middle; margin-right: 8px;
+    }
+
+    /* Demo credentials notice */
+    .demo-box {
+      background: rgba(2,136,209,0.08); border: 1px solid rgba(2,136,209,0.2);
+      border-radius: var(--radius); padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem; font-size: 0.8rem; color: var(--text-secondary);
+    }
+    .demo-box strong { color: var(--sky-light); }
+  </style>
+</head>
+<body>
+  <div class="auth-bg"></div>
+  <div class="node"></div>
+  <div class="node"></div>
+  <div class="node"></div>
+  <div id="toast-container"></div>
+
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo"><i class="fa-solid fa-bolt"></i></div>
+      <h1 class="auth-title">ชมรมวิชาชีพอิเล็กทรอนิกส์</h1>
+      <p class="auth-subtitle">Electronics Club Management System</p>
+    </div>
+    <div class="auth-body">
+      <div class="demo-box">
+        <i class="fa-solid fa-key"></i> Demo: <strong>admin@electronics-club.ac.th</strong> / <strong>admin1234</strong>
+      </div>
+
+      <div class="auth-error" id="auth-error"></div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="email">อีเมล <span class="required">*</span></label>
+          <div class="input-icon-wrap">
+            <span class="icon"><i class="fa-regular fa-envelope"></i>️</span>
+            <input type="email" id="email" class="form-control"
+                   placeholder="example@email.com" autocomplete="email" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">รหัสผ่าน <span class="required">*</span></label>
+          <div class="input-icon-wrap">
+            <span class="icon"><i class="fa-solid fa-lock"></i></span>
+            <input type="password" id="password" class="form-control"
+                   placeholder="รหัสผ่าน" autocomplete="current-password" required>
+            <button type="button" class="eye-toggle" id="toggle-pw" aria-label="แสดง/ซ่อนรหัสผ่าน"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="submit-btn">
+          <span id="btn-text">เข้าสู่ระบบ</span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (api.getToken() && api.getUser()) {
+      window.location.href = 'index.html';
+    }
+
+    const form     = document.getElementById('login-form');
+    const errorDiv = document.getElementById('auth-error');
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText  = document.getElementById('btn-text');
+
+    // Toggle password visibility
+    document.getElementById('toggle-pw').addEventListener('click', function() {
+      const pw = document.getElementById('password');
+      const isText = pw.type === 'text';
+      pw.type = isText ? 'password' : 'text';
+      this.innerHTML = isText ? '<i class="fa-regular fa-eye"></i>' : '<i class="fa-regular fa-eye-slash"></i>';
+    });
+
+    function showError(msg) {
+      errorDiv.textContent = msg;
+      errorDiv.classList.add('show');
+    }
+    function hideError() { errorDiv.classList.remove('show'); }
+
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      btnText.textContent = loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) { showError('กรุณากรอกอีเมลและรหัสผ่าน'); return; }
+
+      setLoading(true);
+      try {
+        const res = await api.post('/auth/login', { email, password });
+        api.setToken(res.token);
+        api.setUser(res.user);
+        showToast('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ ' + res.user.full_name, 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 800);
+      } catch (err) {
+        showError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>

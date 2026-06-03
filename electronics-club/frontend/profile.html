@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>โปรไฟล์ — ชมรมวิชาชีพอิเล็กทรอนิกส์</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .profile-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; }
+    @media (max-width: 900px) { .profile-layout { grid-template-columns: 1fr; } }
+
+    /* Avatar section */
+    .avatar-section { text-align: center; padding: 2rem 1.5rem; }
+    .avatar-wrap {
+      position: relative; display: inline-block; margin-bottom: 1rem;
+    }
+    .avatar-upload-btn {
+      position: absolute; bottom: 4px; right: 4px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      border: 2px solid var(--bg-card);
+      cursor: pointer; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition);
+    }
+    .avatar-upload-btn:hover { background: var(--sky); }
+    .profile-name { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .profile-student-id { font-size: 0.85rem; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+    .profile-role-badge { margin: 0.75rem auto 0; display: inline-block; }
+
+    /* Info grid */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
+
+    .info-item { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem 1rem; }
+    .info-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .info-value { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+
+    /* Tab system */
+    .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .tab-btn {
+      padding: 0.65rem 1.25rem; background: transparent; border: none;
+      color: var(--text-muted); font-family: inherit; font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; position: relative; transition: color var(--transition);
+    }
+    .tab-btn::after {
+      content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+      background: var(--sky); transform: scaleX(0); transition: transform var(--transition);
+    }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active { color: var(--sky-light); }
+    .tab-btn.active::after { transform: scaleX(1); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+    /* Password strength */
+    .pw-strength { height: 4px; border-radius: 99px; background: var(--bg-elevated); margin-top: 0.4rem; overflow: hidden; }
+    .pw-strength-fill { height: 100%; border-radius: 99px; transition: all 0.4s ease; width: 0; }
+  </style>
+</head>
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> โปรไฟล์</div>
+        <h1>โปรไฟล์ของฉัน</h1>
+        <p>จัดการข้อมูลส่วนตัวและรหัสผ่าน</p>
+      </div>
+    </div>
+
+    <div class="profile-layout">
+      <!-- Left: Avatar card -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="avatar-section">
+          <div class="avatar-wrap">
+            <div class="avatar-placeholder avatar-xl" id="profile-avatar" style="font-size:2rem;margin:0 auto">?</div>
+            <button class="avatar-upload-btn" onclick="document.getElementById('avatar-input').click()" title="เปลี่ยนรูปโปรไฟล์"><i class="fa-solid fa-pen"></i></button>
+          </div>
+          <input type="file" id="avatar-input" class="hidden" accept="image/*">
+          <div class="profile-name" id="p-name">—</div>
+          <div class="profile-student-id" id="p-student-id">—</div>
+          <div class="profile-role-badge" id="p-role-badge"></div>
+        </div>
+
+        <div style="padding:0 1.25rem 1.25rem">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">ห้องเรียน</div>
+              <div class="info-value" id="p-classroom">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">เบอร์โทร</div>
+              <div class="info-value" id="p-phone">—</div>
+            </div>
+            <div class="info-item" style="grid-column:1/-1">
+              <div class="info-label">อีเมล</div>
+              <div class="info-value" id="p-email">—</div>
+            </div>
+            <div class="info-item" style="grid-column:1/-1">
+              <div class="info-label">เข้าร่วมเมื่อ</div>
+              <div class="info-value" id="p-joined">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Edit tabs -->
+      <div class="card">
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab="info"><i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูล</button>
+          <button class="tab-btn" data-tab="security"><i class="fa-solid fa-lock"></i> เปลี่ยนรหัสผ่าน</button>
+        </div>
+
+        <!-- Info tab -->
+        <div class="tab-content active" id="tab-info">
+          <form id="info-form">
+            <div class="form-group">
+              <label class="form-label">ชื่อ-นามสกุล <span class="required">*</span></label>
+              <input type="text" id="edit-name" class="form-control" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">ห้องเรียน</label>
+                <input type="text" id="edit-classroom" class="form-control" placeholder="เช่น ชอ.2/1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">เบอร์โทรศัพท์</label>
+                <input type="tel" id="edit-phone" class="form-control" placeholder="08x-xxx-xxxx">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">อีเมล</label>
+              <input type="email" id="edit-email" class="form-control" disabled style="opacity:0.6">
+              <div class="form-hint">ไม่สามารถเปลี่ยนอีเมลได้</div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="save-info-btn"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล</button>
+          </form>
+        </div>
+
+        <!-- Security tab -->
+        <div class="tab-content" id="tab-security">
+          <form id="pw-form">
+            <div class="form-group">
+              <label class="form-label">รหัสผ่านใหม่ <span class="required">*</span></label>
+              <input type="password" id="new-pw" class="form-control" placeholder="อย่างน้อย 6 ตัวอักษร" id="new-pw">
+              <div class="pw-strength"><div class="pw-strength-fill" id="pw-strength-fill"></div></div>
+              <div class="form-hint" id="pw-strength-text">—</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ยืนยันรหัสผ่านใหม่ <span class="required">*</span></label>
+              <input type="password" id="confirm-pw" class="form-control" placeholder="ยืนยันรหัสผ่านใหม่">
+            </div>
+            <button type="submit" class="btn btn-primary" id="save-pw-btn"><i class="fa-solid fa-lock"></i> เปลี่ยนรหัสผ่าน</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = api.getUser();
+    if (!user) return;
+
+    // Fill profile display
+    document.getElementById('p-name').textContent       = user.full_name;
+    document.getElementById('p-student-id').textContent = user.student_id;
+    document.getElementById('p-email').textContent      = user.email;
+    document.getElementById('p-classroom').textContent  = user.classroom || '—';
+    document.getElementById('p-phone').textContent      = user.phone || '—';
+    document.getElementById('p-role-badge').innerHTML   = roleBadge(user.role);
+
+    // Fill form
+    document.getElementById('edit-name').value      = user.full_name;
+    document.getElementById('edit-classroom').value = user.classroom || '';
+    document.getElementById('edit-phone').value     = user.phone || '';
+    document.getElementById('edit-email').value     = user.email;
+
+    // Avatar
+    const avatarEl = document.getElementById('profile-avatar');
+    if (user.avatar) {
+      avatarEl.outerHTML = `<img src="${user.avatar}" class="avatar avatar-xl" id="profile-avatar" alt="avatar" style="margin:0 auto">`;
+    } else {
+      avatarEl.textContent = user.full_name?.charAt(0) || '?';
+    }
+
+    // Load fresh data
+    try {
+      const res = await api.get(`/users/${user.id}`);
+      const u = res.data;
+      document.getElementById('p-joined').textContent = formatDate(u.created_at, {year:'numeric',month:'long',day:'numeric'});
+    } catch(_) {}
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Password strength
+    document.getElementById('new-pw').addEventListener('input', (e) => {
+      const v = e.target.value;
+      const fill   = document.getElementById('pw-strength-fill');
+      const text   = document.getElementById('pw-strength-text');
+      const len = v.length;
+      const hasUp  = /[A-Z]/.test(v);
+      const hasNum = /[0-9]/.test(v);
+      const hasSym = /[^A-Za-z0-9]/.test(v);
+      const score  = (len >= 6 ? 1 : 0) + (len >= 10 ? 1 : 0) + (hasUp ? 1 : 0) + (hasNum ? 1 : 0) + (hasSym ? 1 : 0);
+      const levels = [
+        {color:'', label:''},
+        {color:'#EF5350', label:'อ่อนมาก'},
+        {color:'#FF9800', label:'อ่อน'},
+        {color:'#FFD600', label:'ปานกลาง'},
+        {color:'#66BB6A', label:'แข็งแรง'},
+        {color:'#00C853', label:'แข็งแรงมาก'},
+      ];
+      fill.style.width = (score * 20) + '%';
+      fill.style.background = levels[score]?.color || '';
+      text.textContent = levels[score]?.label || '';
+      text.style.color = levels[score]?.color || '';
+    });
+
+    // Save info
+    document.getElementById('info-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('save-info-btn');
+      btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+      try {
+        const form = new FormData();
+        form.append('full_name', document.getElementById('edit-name').value.trim());
+        form.append('classroom', document.getElementById('edit-classroom').value.trim());
+        form.append('phone',     document.getElementById('edit-phone').value.trim());
+        const avatarFile = document.getElementById('avatar-input').files[0];
+        if (avatarFile) form.append('avatar', avatarFile);
+
+        await api.putForm(`/users/${user.id}`, form);
+
+        // Update local storage
+        const updated = { ...user,
+          full_name: document.getElementById('edit-name').value.trim(),
+          classroom: document.getElementById('edit-classroom').value.trim(),
+        };
+        api.setUser(updated);
+        showToast('บันทึกข้อมูลสำเร็จ', 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } catch (err) {
+        showToast(err.message || 'เกิดข้อผิดพลาด', 'error');
+      } finally { btn.disabled = false; btn.textContent = '<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล'; }
+    });
+
+    // Save password
+    document.getElementById('pw-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newPw  = document.getElementById('new-pw').value;
+      const confPw = document.getElementById('confirm-pw').value;
+      if (newPw.length < 6) { showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'warning'); return; }
+      if (newPw !== confPw) { showToast('รหัสผ่านไม่ตรงกัน', 'warning'); return; }
+
+      const btn = document.getElementById('save-pw-btn');
+      btn.disabled = true; btn.textContent = 'กำลังเปลี่ยน...';
+      try {
+        await api.put(`/users/${user.id}`, { new_password: newPw, full_name: user.full_name });
+        showToast('เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+        document.getElementById('new-pw').value = '';
+        document.getElementById('confirm-pw').value = '';
+      } catch (err) {
+        showToast(err.message || 'เกิดข้อผิดพลาด', 'error');
+      } finally { btn.disabled = false; btn.textContent = '<i class="fa-solid fa-lock"></i> เปลี่ยนรหัสผ่าน'; }
+    });
+
+    // Avatar preview
+    document.getElementById('avatar-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const el = document.getElementById('profile-avatar');
+      if (el.tagName === 'IMG') el.src = url;
+      else el.outerHTML = `<img src="${url}" class="avatar avatar-xl" id="profile-avatar" alt="avatar" style="margin:0 auto">`;
+    });
+  });
+  </script>
+</body>
+</html>

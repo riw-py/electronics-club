@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คลังเอกสาร — ชมรมวิชาชีพอิเล็กทรอนิกส์</title>
+  <meta name="description" content="คลังเอกสารชมรมวิชาชีพอิเล็กทรอนิกส์ ดาวน์โหลดแบบฟอร์ม รายงาน และเอกสารต่างๆ">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    /* Document cards grid */
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+    /* Document card */
+    .doc-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 0.85rem;
+      transition: all var(--transition);
+    }
+    .doc-card:hover { transform: translateY(-3px); box-shadow: var(--glow-blue); border-color: rgba(2,136,209,0.5); }
+    .doc-card-top    { display: flex; align-items: flex-start; gap: 0.85rem; }
+    .doc-card-info   { flex: 1; min-width: 0; }
+    .doc-card-title  { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; margin-bottom: 0.25rem; }
+    .doc-card-desc   { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+    .doc-card-meta   { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-size: 0.75rem; color: var(--text-muted); padding-top: 0.75rem; border-top: 1px solid var(--border); }
+    .doc-card-actions { display: flex; gap: 0.5rem; margin-top: auto; }
+
+    /* Upload area */
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: var(--radius-lg);
+      padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+      transition: all var(--transition); background: var(--bg-surface);
+      margin-bottom: 1rem;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--sky); background: rgba(2,136,209,0.05);
+      box-shadow: var(--glow-blue);
+    }
+    .upload-zone-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .upload-zone-label { color: var(--text-secondary); font-size: 0.9rem; }
+    .upload-zone-label strong { color: var(--sky-light); }
+    .upload-zone-types { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+    /* Stats bar */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+    @media (max-width: 800px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    .stat-mini {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.85rem 1rem;
+      text-align: center;
+    }
+    .stat-mini-val { font-size: 1.4rem; font-weight: 800; color: var(--sky-light); }
+    .stat-mini-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+    /* Category filter tabs */
+    .cat-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .cat-tab {
+      padding: 0.4rem 1rem; border-radius: var(--radius);
+      background: var(--bg-surface); border: 1px solid var(--border);
+      color: var(--text-secondary); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: all var(--transition);
+    }
+    .cat-tab:hover { border-color: rgba(2,136,209,0.4); color: var(--sky-light); }
+    .cat-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* Upload progress bar */
+    .upload-progress {
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.75rem 1rem; margin-top: 0.75rem;
+      display: none;
+    }
+    .upload-progress.show { display: block; }
+    .upload-progress-label { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> คลังเอกสาร</div>
+        <h1>คลังเอกสาร</h1>
+        <p>อัปโหลด ค้นหา และดาวน์โหลดเอกสารต่างๆ ของชมรม</p>
+      </div>
+      <button class="btn btn-primary" id="upload-btn" onclick="openModal('upload-modal')">
+        <i class="fa-solid fa-file-arrow-up"></i> อัปโหลดเอกสาร
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row stagger" id="doc-stats">
+      <div class="stat-mini"><div class="stat-mini-val" id="stat-total">—</div><div class="stat-mini-lbl">เอกสารทั้งหมด</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="stat-pdf">—</div><div class="stat-mini-lbl">PDF</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="stat-office">—</div><div class="stat-mini-lbl">Word/Excel/PPT</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="stat-downloads">—</div><div class="stat-mini-lbl">ดาวน์โหลดทั้งหมด</div></div>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="cat-tabs" id="cat-tabs">
+      <button class="cat-tab active" data-cat=""><i class="fa-regular fa-folder-open"></i> ทั้งหมด</button>
+      <button class="cat-tab" data-cat="report"><i class="fa-solid fa-chart-line"></i> รายงาน</button>
+      <button class="cat-tab" data-cat="manual"><i class="fa-solid fa-book-open"></i> คู่มือ</button>
+      <button class="cat-tab" data-cat="form"><i class="fa-solid fa-pen-to-square"></i> แบบฟอร์ม</button>
+      <button class="cat-tab" data-cat="meeting_minutes"><i class="fa-solid fa-clipboard-list"></i> รายงานประชุม</button>
+      <button class="cat-tab" data-cat="research"><i class="fa-solid fa-flask"></i> งานวิจัย</button>
+      <button class="cat-tab" data-cat="other"><i class="fa-solid fa-file-lines"></i> อื่นๆ</button>
+    </div>
+
+    <!-- Search + sort -->
+    <div class="filters-bar mb-6" style="padding:0.75rem 1rem">
+      <div class="search-bar" style="flex:1;min-width:200px">
+        <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="search-input" placeholder="ค้นหาเอกสาร...">
+      </div>
+      <select id="sort-select" class="filter-select">
+        <option value="newest">ล่าสุด</option>
+        <option value="oldest">เก่าสุด</option>
+        <option value="downloads">ดาวน์โหลดมากสุด</option>
+        <option value="name">ชื่อ A-Z</option>
+      </select>
+      <div id="view-toggle" style="display:flex;gap:0.4rem">
+        <button class="btn btn-ghost btn-sm active" id="grid-view-btn" onclick="setView('grid')" title="Grid View">⊞</button>
+        <button class="btn btn-ghost btn-sm" id="list-view-btn" onclick="setView('list')" title="List View"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </div>
+
+    <!-- Document grid/list -->
+    <div id="doc-container" class="doc-grid stagger">
+      <div class="loading-overlay" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+    <div id="pagination-container" class="mt-4" style="display:flex;justify-content:center"></div>
+  </main>
+
+  <!-- ── Upload Modal ── -->
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">อัปโหลดเอกสาร</span>
+        <button class="modal-close" onclick="closeModal('upload-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="upload-zone-icon" id="upload-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
+          <div class="upload-zone-label"><strong>คลิกหรือลากไฟล์มาวางที่นี่</strong></div>
+          <div class="upload-zone-types">PDF, Word, Excel, PowerPoint (ไม่เกิน 10MB)</div>
+          <div id="selected-file-name" class="mt-2" style="font-size:0.85rem;color:var(--sky-light);display:none"></div>
+        </div>
+        <input type="file" id="file-input" class="hidden"
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,image/*">
+
+        <div class="upload-progress" id="upload-progress">
+          <div class="upload-progress-label" id="progress-label">กำลังอัปโหลด...</div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+
+        <div class="form-group mt-4">
+          <label class="form-label">ชื่อเอกสาร <span class="required">*</span></label>
+          <input type="text" id="doc-title" class="form-control" placeholder="ชื่อเอกสาร" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมวดหมู่</label>
+          <select id="doc-category" class="form-control">
+            <option value="other">อื่นๆ</option>
+            <option value="report">รายงาน</option>
+            <option value="manual">คู่มือ</option>
+            <option value="form">แบบฟอร์ม</option>
+            <option value="meeting_minutes">รายงานประชุม</option>
+            <option value="research">งานวิจัย</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">คำอธิบาย</label>
+          <textarea id="doc-desc" class="form-control" rows="2" placeholder="คำอธิบายเอกสาร (ไม่บังคับ)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('upload-modal')">ยกเลิก</button>
+        <button class="btn btn-primary" id="do-upload-btn" onclick="doUpload()"><i class="fa-solid fa-file-arrow-up"></i> อัปโหลด</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete Confirm ── -->
+  <div class="modal-overlay" id="delete-doc-modal">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header"><span class="modal-title">ยืนยันการลบ</span><button class="modal-close" onclick="closeModal('delete-doc-modal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="modal-body" style="text-align:center;padding:2rem">
+        <div style="font-size:3rem;margin-bottom:1rem"><i class="fa-solid fa-trash-can"></i></div>
+        <p style="font-weight:600;color:var(--text-primary)">ลบเอกสารนี้ใช่ไหม?</p>
+        <p class="fs-sm text-muted mt-2">ไฟล์จะถูกลบออกจากระบบถาวร</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('delete-doc-modal')">ยกเลิก</button>
+        <button class="btn btn-danger" id="confirm-delete-doc">ลบเอกสาร</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/documents.js"></script>
+</body>
+</html>

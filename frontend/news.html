@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ข่าวสาร — ชมรมวิชาชีพอิเล็กทรอนิกส์</title>
+  <meta name="description" content="ข่าวสารและประชาสัมพันธ์ชมรมวิชาชีพอิเล็กทรอนิกส์">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    @media (max-width: 1100px) { .news-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 650px)  { .news-grid { grid-template-columns: 1fr; } }
+
+    /* Detail modal content */
+    .news-detail-img { width: 100%; max-height: 320px; object-fit: cover; border-radius: var(--radius); margin-bottom: 1.25rem; }
+    .news-detail-content { color: var(--text-secondary); line-height: 1.8; font-size: 0.95rem; }
+    .news-detail-content p { margin-bottom: 0.75rem; }
+    .news-meta-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+
+    /* Category filter chips */
+    .filter-chip {
+      padding: 0.35rem 0.9rem; border-radius: 99px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      color: var(--text-secondary); font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: all var(--transition);
+    }
+    .filter-chip:hover { border-color: rgba(2,136,209,0.4); color: var(--sky-light); }
+    .filter-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 12px rgba(21,101,192,0.4); }
+
+    /* Rich text editor */
+    .ql-toolbar-custom {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-bottom: none; border-radius: var(--radius) var(--radius) 0 0;
+      padding: 0.5rem 0.75rem;
+    }
+    .ql-btn {
+      padding: 0.3rem 0.6rem; background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer;
+      font-size: 0.8rem; transition: all var(--transition);
+    }
+    .ql-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    #news-content-editor {
+      min-height: 200px; padding: 1rem;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+      color: var(--text-primary); outline: none; font-size: 0.9rem;
+      line-height: 1.7; font-family: inherit;
+    }
+    #news-content-editor:focus { border-color: var(--sky); }
+    #news-content-editor p { margin: 0; min-height: 1.5em; }
+
+    /* Image preview */
+    .img-preview { position: relative; display: inline-block; margin-top: 0.75rem; }
+    .img-preview img { max-height: 120px; border-radius: var(--radius); border: 1px solid var(--border); }
+    .img-preview-remove {
+      position: absolute; top: -8px; right: -8px;
+      background: var(--danger); color: #fff; border: none; border-radius: 50%;
+      width: 22px; height: 22px; cursor: pointer; font-size: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Published toggle */
+    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .toggle-switch input { display: none; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: 99px; transition: all var(--transition);
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; border-radius: 50%; background: var(--text-muted);
+      top: 2px; left: 2px; transition: all var(--transition);
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--success); border-color: var(--success); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: #fff; }
+  </style>
+</head>
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> ข่าวสาร</div>
+        <h1>ข่าวสารและประชาสัมพันธ์</h1>
+        <p>ติดตามข่าวสารและกิจกรรมล่าสุดของชมรม</p>
+      </div>
+      <button class="btn btn-primary" id="add-news-btn" style="display:none" onclick="openAddModal()">
+        <i class="fa-solid fa-plus"></i> เพิ่มข่าวสาร
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar mb-6">
+      <div class="search-bar" style="flex:1;min-width:200px">
+        <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="search-input" placeholder="ค้นหาข่าวสาร...">
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap" id="category-chips">
+        <button class="filter-chip active" data-cat="">ทั้งหมด</button>
+        <button class="filter-chip" data-cat="announcement">ประกาศ</button>
+        <button class="filter-chip" data-cat="activity">กิจกรรม</button>
+        <button class="filter-chip" data-cat="achievement">ผลงาน</button>
+        <button class="filter-chip" data-cat="general">ทั่วไป</button>
+      </div>
+    </div>
+
+    <div class="news-grid stagger" id="news-grid">
+      <div class="loading-overlay" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+    <div id="pagination-container" class="mt-4" style="display:flex;justify-content:center"></div>
+  </main>
+
+  <!-- ── View News Modal ── -->
+  <div class="modal-overlay" id="view-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <span class="modal-title" id="view-category-badge"></span>
+        <button class="modal-close" onclick="closeModal('view-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="view-body">
+        <h2 id="view-title" style="margin-bottom:0.75rem"></h2>
+        <div class="news-meta-row">
+          <span id="view-author" style="font-size:0.85rem;color:var(--text-muted)"></span>
+          <span id="view-date"   style="font-size:0.85rem;color:var(--text-muted)"></span>
+          <span id="view-views"  style="font-size:0.85rem;color:var(--text-muted)"></span>
+        </div>
+        <img id="view-img" class="news-detail-img hidden" alt="">
+        <div class="news-detail-content" id="view-content"></div>
+      </div>
+      <div class="modal-footer" id="view-actions"></div>
+    </div>
+  </div>
+
+  <!-- ── Add/Edit News Modal ── -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <span class="modal-title" id="edit-modal-title">เพิ่มข่าวสาร</span>
+        <button class="modal-close" onclick="closeModal('edit-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="news-form">
+          <input type="hidden" id="edit-id">
+          <div class="form-group">
+            <label class="form-label">หัวข้อข่าว <span class="required">*</span></label>
+            <input type="text" id="edit-title" class="form-control" placeholder="หัวข้อข่าวสาร" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">หมวดหมู่</label>
+              <select id="edit-category" class="form-control">
+                <option value="general">ทั่วไป</option>
+                <option value="announcement">ประกาศ</option>
+                <option value="activity">กิจกรรม</option>
+                <option value="achievement">ผลงาน</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">การเผยแพร่</label>
+              <div style="display:flex;align-items:center;gap:0.75rem;padding-top:0.4rem">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="edit-published" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="fs-sm text-secondary">เผยแพร่ทันที</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">เนื้อหาข่าว <span class="required">*</span></label>
+            <div class="ql-toolbar-custom">
+              <button type="button" class="ql-btn" onclick="execCmd('bold')"><b>B</b></button>
+              <button type="button" class="ql-btn" onclick="execCmd('italic')"><i>I</i></button>
+              <button type="button" class="ql-btn" onclick="execCmd('underline')"><u>U</u></button>
+              <button type="button" class="ql-btn" onclick="execCmd('insertUnorderedList')">• รายการ</button>
+              <button type="button" class="ql-btn" onclick="execCmd('insertOrderedList')">1. ลำดับ</button>
+            </div>
+            <div id="news-content-editor" contenteditable="true" data-placeholder="เขียนเนื้อหาข่าวที่นี่..."></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">รูปภาพประกอบ</label>
+            <div class="dropzone" id="img-dropzone" onclick="document.getElementById('edit-image').click()">
+              <div class="dropzone-icon"><i class="fa-regular fa-image"></i></div>
+              <div class="dropzone-label">คลิกหรือลากไฟล์รูปภาพมาวางที่นี่<br><strong>JPG, PNG, GIF, WebP</strong> ขนาดไม่เกิน 10MB</div>
+            </div>
+            <input type="file" id="edit-image" accept="image/*" class="hidden">
+            <div id="img-preview-container"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('edit-modal')">ยกเลิก</button>
+        <button class="btn btn-primary" id="save-news-btn" onclick="saveNews()"><i class="fa-solid fa-floppy-disk"></i> บันทึกข่าว</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete confirm ── -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <span class="modal-title">ยืนยันการลบ</span>
+        <button class="modal-close" onclick="closeModal('delete-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:2rem">
+        <div style="font-size:3rem;margin-bottom:1rem"><i class="fa-solid fa-trash-can"></i></div>
+        <p style="color:var(--text-primary);font-weight:600">คุณต้องการลบข่าวสารนี้ใช่ไหม?</p>
+        <p class="fs-sm text-muted mt-2">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('delete-modal')">ยกเลิก</button>
+        <button class="btn btn-danger" id="confirm-delete-btn">ลบข่าวสาร</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/news.js"></script>
+</body>
+</html>

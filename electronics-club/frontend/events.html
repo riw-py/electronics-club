@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ปฏิทินกิจกรรม — ชมรมวิชาชีพอิเล็กทรอนิกส์</title>
+  <meta name="description" content="ปฏิทินกิจกรรมชมรมวิชาชีพอิเล็กทรอนิกส์">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .events-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+    @media (max-width: 960px) { .events-layout { grid-template-columns: 1fr; } }
+
+    /* ── Calendar ── */
+    .calendar-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
+    .cal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-nav { background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.4rem 0.75rem; color: var(--text-secondary); cursor: pointer; font-size: 1rem; transition: all var(--transition); }
+    .cal-nav:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .cal-month-year { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); }
+
+    /* Grid */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-day-header {
+      text-align: center; padding: 0.6rem 0;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-day-header:first-child, .cal-day-header:last-child { color: var(--danger-light); }
+
+    .cal-cell {
+      min-height: 88px; padding: 0.4rem 0.45rem;
+      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background var(--transition);
+      position: relative;
+    }
+    .cal-cell:nth-child(7n) { border-right: none; }
+    .cal-cell:hover { background: var(--bg-hover); }
+    .cal-cell.other-month .cal-day-num { color: var(--text-disabled); }
+    .cal-cell.today { background: rgba(2,136,209,0.06); }
+    .cal-cell.today .cal-day-num {
+      background: var(--sky); color: #fff;
+      border-radius: 50%; width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+    }
+    .cal-cell.selected { background: rgba(21,101,192,0.12); }
+    .cal-day-num { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+    .cal-events { display: flex; flex-direction: column; gap: 2px; }
+    .cal-event-pill {
+      font-size: 0.65rem; font-weight: 600; padding: 1px 5px;
+      border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #fff; cursor: pointer;
+    }
+    .cal-more { font-size: 0.65rem; color: var(--text-muted); padding: 1px 3px; }
+
+    /* Type filter */
+    .type-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .type-chip {
+      display: flex; align-items: center; gap: 0.35rem;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); background: var(--bg-surface);
+      font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; transition: all var(--transition);
+    }
+    .type-chip.active { color: #fff; }
+    .type-dot-sm { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Sidebar event list */
+    .event-sidebar-list { display: flex; flex-direction: column; gap: 0.65rem; }
+    .event-sidebar-item {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--sky); border-radius: var(--radius);
+      padding: 0.8rem; transition: all var(--transition); cursor: pointer;
+    }
+    .event-sidebar-item:hover { background: var(--bg-hover); }
+    .event-sidebar-title { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+    .event-sidebar-meta  { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+  </style>
+</head>
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> ปฏิทินกิจกรรม</div>
+        <h1>ปฏิทินกิจกรรม</h1>
+        <p>กิจกรรมของชมรมและวิทยาลัยประจำเดือน</p>
+      </div>
+      <button class="btn btn-primary" id="add-event-btn" style="display:none" onclick="openAddEventModal()">
+        <i class="fa-solid fa-plus"></i> เพิ่มกิจกรรม
+      </button>
+    </div>
+
+    <!-- Type filters -->
+    <div class="type-filters" id="type-filters">
+      <button class="type-chip active" data-type="">
+        <div class="type-dot-sm" style="background:var(--sky)"></div> ทั้งหมด
+      </button>
+      <button class="type-chip" data-type="club" style="">
+        <div class="type-dot-sm" style="background:#1565C0"></div> กิจกรรมชมรม
+      </button>
+      <button class="type-chip" data-type="college">
+        <div class="type-dot-sm" style="background:#FF6F00"></div> กิจกรรมวิทยาลัย
+      </button>
+      <button class="type-chip" data-type="competition">
+        <div class="type-dot-sm" style="background:#FFD600"></div> การแข่งขัน
+      </button>
+      <button class="type-chip" data-type="meeting">
+        <div class="type-dot-sm" style="background:#0288D1"></div> ประชุม
+      </button>
+    </div>
+
+    <div class="events-layout">
+      <!-- Calendar -->
+      <div class="calendar-card">
+        <div class="cal-header">
+          <button class="cal-nav" id="prev-btn">‹</button>
+          <div class="cal-month-year" id="cal-title">—</div>
+          <button class="cal-nav" id="next-btn">›</button>
+        </div>
+        <div class="cal-grid" id="cal-days-header">
+          <div class="cal-day-header">อา</div>
+          <div class="cal-day-header">จ</div>
+          <div class="cal-day-header">อ</div>
+          <div class="cal-day-header">พ</div>
+          <div class="cal-day-header">พฤ</div>
+          <div class="cal-day-header">ศ</div>
+          <div class="cal-day-header">ส</div>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+          <div class="loading-overlay" style="grid-column:1/-1"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Event sidebar -->
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-header">
+            <span class="card-title" id="sidebar-date-title">กิจกรรมที่กำลังจะมาถึง</span>
+          </div>
+          <div class="event-sidebar-list" id="event-sidebar-list">
+            <div class="loading-overlay"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="card">
+          <div class="card-title mb-3">ประเภทกิจกรรม</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem" id="legend">
+            <div style="display:flex;align-items:center;gap:0.5rem"><div style="width:12px;height:12px;border-radius:3px;background:#1565C0"></div><span class="fs-sm text-secondary">กิจกรรมชมรม</span></div>
+            <div style="display:flex;align-items:center;gap:0.5rem"><div style="width:12px;height:12px;border-radius:3px;background:#FF6F00"></div><span class="fs-sm text-secondary">กิจกรรมวิทยาลัย</span></div>
+            <div style="display:flex;align-items:center;gap:0.5rem"><div style="width:12px;height:12px;border-radius:3px;background:#FFD600"></div><span class="fs-sm text-secondary">การแข่งขัน</span></div>
+            <div style="display:flex;align-items:center;gap:0.5rem"><div style="width:12px;height:12px;border-radius:3px;background:#0288D1"></div><span class="fs-sm text-secondary">ประชุม</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── View Event Modal ── -->
+  <div class="modal-overlay" id="view-event-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">รายละเอียดกิจกรรม</span>
+        <button class="modal-close" onclick="closeModal('view-event-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <h3 id="ev-title" style="margin-bottom:1rem"></h3>
+        <div style="display:grid;gap:0.75rem">
+          <div style="display:flex;gap:0.75rem;align-items:flex-start">
+            <span style="width:24px;text-align:center"><i class="fa-regular fa-calendar-days"></i></span>
+            <div>
+              <div class="fs-sm text-muted">วันที่</div>
+              <div id="ev-date" style="font-weight:600"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start" id="ev-loc-row">
+            <span style="width:24px;text-align:center"><i class="fa-solid fa-location-dot"></i></span>
+            <div>
+              <div class="fs-sm text-muted">สถานที่</div>
+              <div id="ev-location" style="font-weight:600"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start">
+            <span style="width:24px;text-align:center"><i class="fa-solid fa-tag"></i></span>
+            <div>
+              <div class="fs-sm text-muted">ประเภท</div>
+              <div id="ev-type" style="font-weight:600"></div>
+            </div>
+          </div>
+          <div id="ev-desc-row">
+            <div class="fs-sm text-muted" style="margin-bottom:0.25rem">รายละเอียด</div>
+            <div id="ev-desc" style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" id="ev-actions"></div>
+    </div>
+  </div>
+
+  <!-- ── Add/Edit Event Modal ── -->
+  <div class="modal-overlay" id="edit-event-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="edit-ev-title">เพิ่มกิจกรรม</span>
+        <button class="modal-close" onclick="closeModal('edit-event-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ev-edit-id">
+        <div class="form-group">
+          <label class="form-label">ชื่อกิจกรรม <span class="required">*</span></label>
+          <input type="text" id="ev-name" class="form-control" placeholder="ชื่อกิจกรรม" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">วันที่เริ่มต้น <span class="required">*</span></label>
+            <input type="datetime-local" id="ev-start" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">วันที่สิ้นสุด <span class="required">*</span></label>
+            <input type="datetime-local" id="ev-end" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">ประเภทกิจกรรม</label>
+            <select id="ev-type-select" class="form-control">
+              <option value="club">กิจกรรมชมรม</option>
+              <option value="college">กิจกรรมวิทยาลัย</option>
+              <option value="competition">การแข่งขัน</option>
+              <option value="meeting">ประชุม</option>
+              <option value="other">อื่นๆ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">สี</label>
+            <input type="color" id="ev-color" class="form-control" value="#0288D1" style="height:42px;padding:0.25rem">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">สถานที่</label>
+          <input type="text" id="ev-location-input" class="form-control" placeholder="ระบุสถานที่">
+        </div>
+        <div class="form-group">
+          <label class="form-label">รายละเอียด</label>
+          <textarea id="ev-desc-input" class="form-control" rows="3" placeholder="รายละเอียดกิจกรรม"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('edit-event-modal')">ยกเลิก</button>
+        <button class="btn btn-primary" id="save-event-btn" onclick="saveEvent()"><i class="fa-solid fa-floppy-disk"></i> บันทึกกิจกรรม</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="modal-overlay" id="delete-event-modal">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header"><span class="modal-title">ยืนยันการลบ</span><button class="modal-close" onclick="closeModal('delete-event-modal')"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="modal-body" style="text-align:center;padding:2rem">
+        <div style="font-size:3rem;margin-bottom:1rem"><i class="fa-solid fa-trash-can"></i></div>
+        <p style="font-weight:600;color:var(--text-primary)">ลบกิจกรรมนี้ใช่ไหม?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('delete-event-modal')">ยกเลิก</button>
+        <button class="btn btn-danger" id="confirm-delete-event">ลบ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/calendar.js"></script>
+</body>
+</html>

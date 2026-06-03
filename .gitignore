@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment variables (ห้ามอัปโหลด - มีรหัสผ่านอยู่)
+.env
+.env.local
+.env.production
+
+# Uploads
+uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
