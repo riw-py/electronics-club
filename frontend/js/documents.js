@@ -98,7 +98,7 @@ function renderDocCard(doc) {
       <span><i class="fa-solid fa-download"></i> ${doc.download_count}</span>
     </div>
     <div class="doc-card-actions">
-      <a href="/api/documents/${doc.id}/download" class="btn btn-primary btn-sm w-full"
+      <a href="${API_BASE}/documents/${doc.id}/download" class="btn btn-primary btn-sm w-full"
          onclick="trackDownload(${doc.id})" target="_blank">
         <i class="fa-solid fa-download"></i> ดาวน์โหลด
       </a>
@@ -123,7 +123,7 @@ function renderDocRow(doc) {
     <td class="fs-sm">${formatFileSize(doc.file_size)}</td>
     <td><span class="badge badge-blue"><i class="fa-solid fa-download"></i> ${doc.download_count}</span></td>
     <td style="display:flex;gap:0.4rem">
-      <a href="/api/documents/${doc.id}/download" class="btn btn-primary btn-sm" target="_blank"><i class="fa-solid fa-download"></i></a>
+      <a href="${API_BASE}/documents/${doc.id}/download" class="btn btn-primary btn-sm" target="_blank"><i class="fa-solid fa-download"></i></a>
       ${canDelete ? `<button class="btn btn-danger btn-sm btn-icon" onclick="startDeleteDoc(${doc.id})"><i class="fa-solid fa-trash-can"></i></button>` : ''}
     </td>
   </tr>`;

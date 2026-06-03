@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการสมาชิก — ชมรมอิเล็กทรอนิกส์</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+</head>
+
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> จัดการสมาชิก</div>
+        <h1>จัดการสมาชิก</h1>
+        <p style="color:var(--text-secondary)">แก้ไขสิทธิ์และลบผู้ใช้งาน (เฉพาะผู้ดูแลระบบ)</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>รหัสนักศึกษา</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>อีเมล</th>
+              <th>บทบาท</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="members-tbody">
+            <tr><td colspan="5" style="text-align:center"><div class="spinner" style="margin:auto"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/members.js"></script>
+</body>
+
+</html>
