@@ -10,7 +10,7 @@ function injectLayout() {
       <img src="img/logo.png" alt="Electronics Logo" class="sidebar-logo-img">
       <div class="sidebar-logo-text">
         <div class="sidebar-logo-title">Electronics Club</div>
-        <div class="sidebar-logo-sub">ชมรมวิชาชีพอิเล็กทรอนิกส์</div>
+        <div class="sidebar-logo-sub">ชมรมอิเล็กทรอนิกส์</div>
       </div>
     </a>
 

@@ -14,13 +14,6 @@ const TYPE_COLORS = {
   meeting: '#0288D1', other: '#7B7B7B'
 };
 
-document.getElementById('ev-type-select').addEventListener('change', (e) => {
-  const type = e.target.value;
-  if (TYPE_COLORS[type]) {
-    document.getElementById('ev-color').value = TYPE_COLORS[type];
-  }
-});
-
 // ── Type filter chips ──
 document.getElementById('type-filters').addEventListener('click', (e) => {
   const chip = e.target.closest('.type-chip');
