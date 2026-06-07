@@ -218,23 +218,13 @@ async function submitReport() {
   if (coworkers.length > 0) formData.append('co_workers', JSON.stringify(coworkers));
   
   try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API_BASE}/garbage/report`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast('ส่งงานสำเร็จ! รอการตรวจสอบ', 'success');
-      selectedFile = null;
-      document.getElementById('garbage-file-name').textContent = '';
-      document.getElementById('garbage-upload-zone').style.borderColor = 'var(--border)';
-    } else {
-      showToast(data.message, 'error');
-    }
+    const res = await api.postForm('/garbage/report', formData);
+    showToast('ส่งงานสำเร็จ! รอการตรวจสอบ', 'success');
+    selectedFile = null;
+    document.getElementById('garbage-file-name').textContent = '';
+    document.getElementById('garbage-upload-zone').style.borderColor = 'var(--border)';
   } catch (err) {
-    showToast('เกิดข้อผิดพลาด', 'error');
+    showToast(err.message || 'เกิดข้อผิดพลาด', 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งงาน';
