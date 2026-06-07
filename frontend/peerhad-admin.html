@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการ Pee-Rhad — ชมรมอิเล็กทรอนิกส์</title>
+  <meta name="description" content="จัดการระบบ Pee-Rhad ชมรมอิเล็กทรอนิกส์">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .container-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .container-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .table th {
+      background: var(--bg-elevated);
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .table tr:hover td {
+      background: var(--bg-hover);
+    }
+
+    .badge-primary {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(2, 136, 209, 0.15);
+      color: var(--sky-light);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.4;
+      display: block;
+    }
+
+    .junior-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .junior-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .junior-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .junior-bar-fill.full {
+      background: var(--danger);
+    }
+  </style>
+</head>
+
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> Pee-Rhad</div>
+        <h1>จัดการ Pee-Rhad</h1>
+        <p>ลงทะเบียน Pee และดูรายชื่อผู้เข้าร่วมระบบ</p>
+      </div>
+    </div>
+
+    <div id="toast-local"></div>
+
+    <div class="container-main">
+      <!-- Register Senior -->
+      <div class="card">
+        <div class="card-header" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+          <h3 style="margin:0;font-size:1rem;display:flex;align-items:center;gap:0.5rem">
+            <i class="fas fa-user-plus" style="color:var(--sky)"></i> ลงทะเบียน Pee
+          </h3>
+        </div>
+
+        <form id="registerForm">
+          <div class="form-group">
+            <label class="form-label" for="code">รหัส Pee <span class="required">*</span></label>
+            <input type="text" id="code" class="form-control" placeholder="เช่น PEE001" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="fullname">ชื่อ-นามสกุล <span class="required">*</span></label>
+            <input type="text" id="fullname" class="form-control" placeholder="เช่น นายสมชาย ใจดี" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="hint">คำใบ้ <span class="required">*</span></label>
+            <textarea id="hint" class="form-control" placeholder="ใบ้เพื่อให้ Junior รู้จักตัวตน..." required style="min-height:90px;resize:vertical"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="max_juniors">จำนวน Junior สูงสุด</label>
+            <input type="number" id="max_juniors" class="form-control" value="2" min="1">
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%">
+            <i class="fas fa-plus"></i> ลงทะเบียน
+          </button>
+        </form>
+      </div>
+
+      <!-- Seniors List -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+          <h3 style="margin:0;font-size:1rem;display:flex;align-items:center;gap:0.5rem">
+            <i class="fas fa-list" style="color:var(--sky)"></i> รายชื่อ Pee
+          </h3>
+          <button id="refreshBtn" class="btn btn-ghost btn-sm" title="รีเฟรช">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+
+        <div id="seniorsList">
+          <div class="empty-state">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Register Form Submit
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.submitter;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+
+      const formData = {
+        code: document.getElementById('code').value.trim(),
+        fullname: document.getElementById('fullname').value.trim(),
+        hint: document.getElementById('hint').value.trim(),
+        max_juniors: parseInt(document.getElementById('max_juniors').value) || 2
+      };
+
+      try {
+        const res = await api.post('/pee-rhad/seniors', formData);
+        showToast('ลงทะเบียน Pee สำเร็จ!', 'success');
+        document.getElementById('registerForm').reset();
+        loadSeniors();
+      } catch (err) {
+        showToast(err.message || 'เกิดข้อผิดพลาด', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> ลงทะเบียน';
+      }
+    });
+
+    // Load Seniors List
+    async function loadSeniors() {
+      document.getElementById('seniorsList').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+      try {
+        const data = await api.get('/pee-rhad/seniors');
+
+        if (data.data && data.data.length > 0) {
+          let html = `<div class="table-container"><table class="table">
+            <thead><tr>
+              <th>รหัส</th><th>ชื่อ-นามสกุล</th><th>Junior</th><th>วันที่</th>
+            </tr></thead><tbody>`;
+
+          data.data.forEach(senior => {
+            const pct = Math.round((senior.junior_count / senior.max_juniors) * 100);
+            const isFull = senior.junior_count >= senior.max_juniors;
+            const createdDate = new Date(senior.created_at).toLocaleDateString('th-TH');
+            html += `<tr>
+              <td><span class="badge-primary">${senior.code}</span></td>
+              <td><strong>${senior.fullname}</strong></td>
+              <td>
+                <div class="junior-bar">
+                  <div class="junior-bar-track">
+                    <div class="junior-bar-fill ${isFull ? 'full' : ''}" style="width:${pct}%"></div>
+                  </div>
+                  <span style="font-size:0.8rem;white-space:nowrap;color:${isFull ? 'var(--danger)' : 'var(--text-secondary)'}">${senior.junior_count}/${senior.max_juniors}</span>
+                </div>
+              </td>
+              <td style="color:var(--text-muted);font-size:0.85rem">${createdDate}</td>
+            </tr>`;
+          });
+
+          html += '</tbody></table></div>';
+          document.getElementById('seniorsList').innerHTML = html;
+        } else {
+          document.getElementById('seniorsList').innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>ยังไม่มี Pee ที่ลงทะเบียน</p>
+            </div>`;
+        }
+      } catch (err) {
+        document.getElementById('seniorsList').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+          </div>`;
+        showToast('โหลดข้อมูลไม่สำเร็จ', 'error');
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', loadSeniors);
+    loadSeniors();
+  </script>
+</body>
+
+</html>

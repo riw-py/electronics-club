@@ -23,6 +23,7 @@ app.use('/api/events',    require('./routes/events.routes'));
 app.use('/api/documents', require('./routes/documents.routes'));
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/garbage',   require('./routes/garbage.routes'));
+app.use('/api/pee-rhad',  require('./routes/pee-rhad.routes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -32,6 +32,12 @@ function injectLayout() {
         <a href="documents.html" class="nav-item" data-page="documents.html" data-role="admin">
           <span class="nav-item-icon"><i class="fa-regular fa-folder-open"></i></span> คลังเอกสาร
         </a>
+        <a href="peerhad-select.html" class="nav-item" data-page="peerhad-select.html">
+          <span class="nav-item-icon"><i class="fa-solid fa-heart"></i></span> เลือก Pee-Rhad
+        </a>
+        <a href="peerhad-reveal.html" class="nav-item" data-page="peerhad-reveal.html">
+          <span class="nav-item-icon"><i class="fa-solid fa-gift"></i></span> ผลลัพธ์ Pee-Rhad
+        </a>
       </div>
 
       <div class="sidebar-section" data-role="admin,committee">
@@ -41,6 +47,9 @@ function injectLayout() {
         </a>
         <a href="members.html" class="nav-item" data-page="members.html" data-role="admin">
           <span class="nav-item-icon"><i class="fa-solid fa-users"></i></span> จัดการสมาชิก
+        </a>
+        <a href="peerhad-admin.html" class="nav-item" data-page="peerhad-admin.html" data-role="admin,committee">
+          <span class="nav-item-icon"><i class="fa-solid fa-user-plus"></i></span> จัดการ Pee-Rhad
         </a>
       </div>
 

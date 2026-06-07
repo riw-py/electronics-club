@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เลือก Pee — ชมรมอิเล็กทรอนิกส์</title>
+  <meta name="description" content="เลือก Pee-Rhad ชมรมอิเล็กทรอนิกส์">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .hero-banner {
+      background: linear-gradient(135deg, #1565C0 0%, #1976D2 50%, #0D47A1 100%);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    }
+
+    .hero-banner h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.75rem;
+      font-weight: 800;
+      position: relative;
+    }
+
+    .hero-banner p {
+      margin: 0;
+      opacity: 0.9;
+      position: relative;
+    }
+
+    .selection-form {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .selection-form h3 {
+      margin: 0 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .seniors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .senior-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+    }
+
+    .senior-card:hover:not(.is-full) {
+      border-color: var(--sky);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md), 0 0 0 1px rgba(2, 136, 209, 0.2);
+    }
+
+    .senior-card.selected {
+      background: rgba(2, 136, 209, 0.08);
+      border-color: var(--sky);
+      box-shadow: var(--glow-sky);
+    }
+
+    .senior-card.is-full {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .senior-code-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+      letter-spacing: 0.02em;
+    }
+
+    .senior-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--text-primary);
+    }
+
+    .senior-hint-preview {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .senior-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .hint-reveal {
+      background: rgba(2, 136, 209, 0.08);
+      border-left: 3px solid var(--sky);
+      padding: 0.9rem 1rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 0.5rem 0 1.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .hint-reveal strong {
+      display: block;
+      color: var(--sky-light);
+      margin-bottom: 0.3rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> เลือก Pee-Rhad</div>
+        <h1>เลือก Pee ของคุณ</h1>
+        <p>Junior ท่านโปรดเลือก Pee ที่ต้องการเป็นผู้พี่เลี้ยงในชมรม</p>
+      </div>
+    </div>
+
+    <!-- Selection Form -->
+    <div class="selection-form">
+      <h3><i class="fas fa-clipboard" style="color:var(--sky)"></i> กรอกข้อมูลของคุณ</h3>
+
+      <form id="selectForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="juniorName">ชื่อ-นามสกุล <span class="required">*</span></label>
+            <input type="text" id="juniorName" class="form-control" placeholder="กรุณากรอกชื่อ-นามสกุลของคุณ" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="juniorLevel">ระดับ/ชั้นปี <span class="required">*</span></label>
+            <select id="juniorLevel" class="form-control" required>
+              <option value="">-- เลือกระดับชั้นปี --</option>
+              <option value="ปี 1">ปี 1</option>
+              <option value="ปี 2">ปี 2</option>
+              <option value="ปี 3">ปี 3</option>
+              <option value="สมาชิกใหม่">สมาชิกใหม่</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">เลือก Pee ที่ต้องการ <span class="required">*</span></label>
+          <div id="seniorsList">
+            <div class="loading-overlay" style="position:relative;height:100px">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="selectedSeniorInfo" class="hidden">
+          <div class="hint-reveal">
+            <strong><i class="fas fa-lightbulb"></i> คำใบ้จาก Pee:</strong>
+            <span id="hintText"></span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:0.5rem">
+          <button type="reset" class="btn btn-ghost" style="flex:1" onclick="clearSelection()">
+            <i class="fas fa-redo"></i> ล้างข้อมูล
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn" style="flex:2">
+            <i class="fas fa-check"></i> ยืนยันการเลือก
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    let selectedSeniorId = null;
+
+    async function loadSeniors() {
+      document.getElementById('seniorsList').innerHTML = '<div class="loading-overlay" style="position:relative;height:100px"><div class="spinner"></div></div>';
+      try {
+        const data = await api.get('/pee-rhad/seniors');
+
+        if (data.data && data.data.length > 0) {
+          let html = '<div class="seniors-grid">';
+          data.data.forEach(senior => {
+            const isFull = senior.junior_count >= senior.max_juniors;
+            html += `
+              <div class="senior-card ${isFull ? 'is-full' : ''}"
+                   onclick="${isFull ? '' : `selectSenior(${senior.id}, '${senior.fullname.replace(/'/g, "\\'")}', \`${senior.hint.replace(/`/g, '\\`')}\`)`}"
+                   id="card-${senior.id}">
+                <div class="senior-code-badge">${senior.code}</div>
+                <div class="senior-name">${senior.fullname}</div>
+                <div class="senior-hint-preview">${senior.hint.substring(0, 100)}${senior.hint.length > 100 ? '...' : ''}</div>
+                <div class="senior-status-row">
+                  <span><i class="fas fa-users"></i> ${senior.junior_count}/${senior.max_juniors} คน</span>
+                  ${isFull ? '<span style="color:var(--danger)"><i class="fas fa-times-circle"></i> เต็มแล้ว</span>' : '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> ว่างอยู่</span>'}
+                </div>
+              </div>`;
+          });
+          html += '</div>';
+          document.getElementById('seniorsList').innerHTML = html;
+        } else {
+          document.getElementById('seniorsList').innerHTML = `
+            <div class="empty-state" style="padding:2rem">
+              <i class="fas fa-inbox" style="font-size:2.5rem;opacity:0.4;display:block;margin-bottom:0.75rem"></i>
+              <p>ยังไม่มี Pee ที่เปิดรับ Junior</p>
+            </div>`;
+        }
+      } catch (err) {
+        showToast('โหลดข้อมูลไม่สำเร็จ', 'error');
+      }
+    }
+
+    function selectSenior(id, name, hint) {
+      selectedSeniorId = id;
+      document.querySelectorAll('.senior-card').forEach(c => c.classList.remove('selected'));
+      const card = document.getElementById(`card-${id}`);
+      if (card) card.classList.add('selected');
+      document.getElementById('hintText').textContent = hint;
+      document.getElementById('selectedSeniorInfo').classList.remove('hidden');
+    }
+
+    function clearSelection() {
+      selectedSeniorId = null;
+      document.querySelectorAll('.senior-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('selectedSeniorInfo').classList.add('hidden');
+    }
+
+    document.getElementById('selectForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!selectedSeniorId) { showToast('กรุณาเลือก Pee ที่ต้องการ', 'warning'); return; }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+
+      const formData = {
+        senior_id: selectedSeniorId,
+        junior_name: document.getElementById('juniorName').value.trim(),
+        junior_level: document.getElementById('juniorLevel').value
+      };
+
+      try {
+        await api.post('/pee-rhad/select', formData);
+        showToast('เลือก Pee สำเร็จ! ยินดีต้อนรับสู่ชมรม 🎉', 'success');
+        setTimeout(() => {
+          document.getElementById('selectForm').reset();
+          clearSelection();
+          loadSeniors();
+        }, 1800);
+      } catch (err) {
+        showToast(err.message || 'เกิดข้อผิดพลาด', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> ยืนยันการเลือก';
+      }
+    });
+
+    loadSeniors();
+  </script>
+</body>
+
+</html>

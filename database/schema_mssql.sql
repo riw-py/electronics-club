@@ -123,6 +123,34 @@ CREATE TABLE documents (
 GO
 
 -- ============================================================
+-- SENIORS (Mentor/Senior Users)
+-- ============================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'seniors')
+CREATE TABLE seniors (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    code VARCHAR(10) UNIQUE NOT NULL,
+    fullname NVARCHAR(255) NOT NULL,
+    hint NVARCHAR(500) NOT NULL,
+    max_juniors INT DEFAULT 2,
+    created_at DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+-- ============================================================
+-- JUNIOR_MATCHES (Senior-Junior Pairing System)
+-- ============================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'junior_matches')
+CREATE TABLE junior_matches (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    senior_id INT NOT NULL,
+    junior_name NVARCHAR(255) NOT NULL,
+    junior_level NVARCHAR(20) NOT NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT fk_junior_matches_senior FOREIGN KEY (senior_id) REFERENCES seniors(id) ON DELETE CASCADE
+);
+GO
+
+-- ============================================================
 -- NOTIFICATIONS
 -- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'notifications')

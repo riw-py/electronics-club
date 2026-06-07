@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ผลลัพธ์ Pee-Rhad — ชมรมอิเล็กทรอนิกส์</title>
+  <meta name="description" content="ผลลัพธ์การจับคู่ Pee-Rhad ชมรมอิเล็กทรอนิกส์">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <style>
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--sky-light);
+      line-height: 1;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-top: 0.4rem;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      animation: slideUp 0.3s ease-out both;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .result-card:hover {
+      border-color: rgba(123, 31, 162, 0.4);
+      box-shadow: 0 0 0 1px rgba(123, 31, 162, 0.15);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-header h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .heart-icon {
+      color: #E91E63;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.25); }
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .junior-name-big {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.35rem;
+    }
+
+    .level-badge {
+      display: inline-block;
+      background: rgba(2, 136, 209, 0.15);
+      color: var(--sky-light);
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .senior-block {
+      background: rgba(123, 31, 162, 0.08);
+      border-left: 3px solid #8E24AA;
+      padding: 1rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-top: 1rem;
+    }
+
+    .senior-code-badge {
+      display: inline-block;
+      background: #7B1FA2;
+      color: #fff;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .senior-name-row {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .hint-box {
+      background: var(--bg-surface);
+      border-left: 3px solid #FFD600;
+      padding: 0.75rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    .hint-box-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #FFD600;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .hint-text {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .match-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+
+<body>
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/sidebar.js"></script>
+
+  <main class="page-content">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb"><a href="index.html">หน้าหลัก</a> <span>›</span> ผลลัพธ์ Pee-Rhad</div>
+        <h1>ผลลัพธ์ Pee-Rhad</h1>
+        <p>ดูความจับคู่ระหว่าง Pee และ Junior ของชมรม</p>
+      </div>
+      <button class="btn btn-primary" onclick="loadMatches()">
+        <i class="fas fa-sync-alt"></i> รีเฟรช
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsContainer"></div>
+
+    <!-- Filter -->
+    <div class="filters-bar mb-6">
+      <select id="filterLevel" class="form-control" style="max-width:220px" onchange="filterResults()">
+        <option value="">— ทุกระดับ —</option>
+        <option value="ปี 1">ปี 1</option>
+        <option value="ปี 2">ปี 2</option>
+        <option value="ปี 3">ปี 3</option>
+        <option value="สมาชิกใหม่">สมาชิกใหม่</option>
+      </select>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsList">
+      <div class="loading-overlay" style="position:relative;height:200px">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let allMatches = [];
+
+    async function loadMatches() {
+      document.getElementById('resultsList').innerHTML = '<div class="loading-overlay" style="position:relative;height:200px"><div class="spinner"></div></div>';
+      try {
+        const data = await api.get('/pee-rhad/reveal');
+
+        if (data.data && data.data.length > 0) {
+          allMatches = data.data;
+          displayMatches(allMatches);
+          updateStats();
+        } else {
+          document.getElementById('resultsList').innerHTML = `
+            <div class="empty-state" style="padding:4rem">
+              <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
+              <h3>ยังไม่มีการจับคู่ Pee-Rhad</h3>
+              <p class="fs-sm text-muted mt-2">Junior สามารถเข้ามาเลือก Pee ได้ที่หน้า "เลือก Pee-Rhad"</p>
+            </div>`;
+          document.getElementById('statsContainer').innerHTML = '';
+        }
+      } catch (err) {
+        showToast('โหลดข้อมูลไม่สำเร็จ', 'error');
+      }
+    }
+
+    function displayMatches(matches) {
+      if (matches.length === 0) {
+        document.getElementById('resultsList').innerHTML = `
+          <div class="empty-state" style="padding:3rem">
+            <div class="empty-state-icon"><i class="fas fa-search"></i></div>
+            <h3>ไม่พบการจับคู่ที่ตรงกับเงื่อนไข</h3>
+          </div>`;
+        return;
+      }
+
+      let html = '<div class="results-grid stagger">';
+      matches.forEach(match => {
+        const matchDate = new Date(match.created_at).toLocaleDateString('th-TH', {
+          year: 'numeric', month: 'short', day: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+
+        html += `
+          <div class="result-card">
+            <div class="result-header">
+              <h3><i class="fas fa-user-graduate"></i> Junior ${match.junior_level}</h3>
+              <i class="fas fa-heart heart-icon"></i>
+            </div>
+
+            <div class="section-label"><i class="fas fa-user"></i> ข้อมูล Junior</div>
+            <div class="junior-name-big">${match.junior_name}</div>
+            <div><span class="level-badge">${match.junior_level}</span></div>
+
+            <div class="senior-block">
+              <div class="section-label"><i class="fas fa-user-tie"></i> Pee ที่ดูแล</div>
+              <div class="senior-code-badge">${match.code}</div>
+              <div class="senior-name-row">${match.senior_name}</div>
+              <div class="hint-box">
+                <div class="hint-box-title"><i class="fas fa-lightbulb"></i> คำใบ้</div>
+                <div class="hint-text">${match.hint}</div>
+              </div>
+            </div>
+
+            <div class="match-date">
+              <i class="fas fa-calendar-alt"></i> ${matchDate}
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+      document.getElementById('resultsList').innerHTML = html;
+    }
+
+    function filterResults() {
+      const val = document.getElementById('filterLevel').value;
+      displayMatches(val ? allMatches.filter(m => m.junior_level === val) : allMatches);
+    }
+
+    function updateStats() {
+      if (!allMatches.length) return;
+      const uniqueSeniors = new Set(allMatches.map(m => m.senior_id)).size;
+      const levels = [...new Set(allMatches.map(m => m.junior_level))].length;
+
+      document.getElementById('statsContainer').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${allMatches.length}</div>
+          <div class="stat-label">การจับคู่ทั้งหมด</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${uniqueSeniors}</div>
+          <div class="stat-label">Pee ที่เข้าร่วม</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${levels}</div>
+          <div class="stat-label">ระดับ/ชั้นปี</div>
+        </div>`;
+    }
+
+    loadMatches();
+  </script>
+</body>
+
+</html>

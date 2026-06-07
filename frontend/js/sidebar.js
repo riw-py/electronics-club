@@ -60,12 +60,15 @@ class SidebarManager {
 
   updateNavbarTitle() {
     const titles = {
-      'index.html':     'หน้าหลัก',
-      'news.html':      'ข่าวสารและประชาสัมพันธ์',
-      'events.html':    'ปฏิทินกิจกรรม',
-      'documents.html': 'คลังเอกสาร',
-      'dashboard.html': 'Dashboard',
-      'profile.html':   'โปรไฟล์',
+      'index.html':         'หน้าหลัก',
+      'news.html':          'ข่าวสารและประชาสัมพันธ์',
+      'events.html':        'ปฏิทินกิจกรรม',
+      'documents.html':     'คลังเอกสาร',
+      'dashboard.html':     'Dashboard',
+      'profile.html':       'โปรไฟล์',
+      'peerhad-select.html': 'เลือก Pee-Rhad',
+      'peerhad-reveal.html': 'ผลลัพธ์ Pee-Rhad',
+      'peerhad-admin.html':  'จัดการ Pee-Rhad',
     };
     const page = window.location.pathname.split('/').pop() || 'index.html';
     const titleEl = document.getElementById('navbar-page-title');
