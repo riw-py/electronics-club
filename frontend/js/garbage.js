@@ -5,10 +5,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    
+
     btn.classList.add('active');
     document.getElementById(btn.dataset.tab).classList.add('active');
-    
+
     if (btn.dataset.tab === 'tab-schedule') loadSchedule();
     else if (btn.dataset.tab === 'tab-scoreboard') loadScoreboard();
     else if (btn.dataset.tab === 'tab-reports') loadReports();
@@ -31,13 +31,13 @@ async function loadDashboard() {
   try {
     const res = await api.get('/garbage/dashboard');
     const { duties } = res.data;
-    
+
     const container = document.getElementById('today-duties');
     const select = document.getElementById('report-duty-id');
-    
+
     // Clear select
     select.innerHTML = '<option value="">-- ไม่ระบุ (ช่วยงานพิเศษ) --</option>';
-    
+
     if (duties.length === 0) {
       container.innerHTML = '<div style="text-align:center;width:100%;color:var(--text-muted)">ไม่มีเวรสำหรับวันนี้</div>';
       return;
@@ -46,7 +46,7 @@ async function loadDashboard() {
     container.innerHTML = duties.map(d => {
       const shiftName = d.shift === 'morning' ? 'เช้า (ก่อน 12:30)' : 'บ่าย (ก่อน 15:30)';
       select.innerHTML += `<option value="${d.id}">เวร${shiftName} - ${d.classroom}</option>`;
-      
+
       return `
         <div class="duty-card">
           <div class="duty-title">เวร${d.shift === 'morning' ? 'เช้า' : 'บ่าย'}</div>
@@ -54,30 +54,30 @@ async function loadDashboard() {
         </div>
       `;
     }).join('');
-    
-      // Auto select user classroom if available
-      if (user && user.classroom) {
-        document.getElementById('report-classroom').value = user.classroom;
-      }
-  
-      // Render Today's Reports
-      const reportsContainer = document.getElementById('today-reports');
-      if (reportsContainer) {
-        if (!res.data.reports || res.data.reports.length === 0) {
-          reportsContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted)">ยังไม่มีประวัติการส่งงานในวันนี้</div>';
-        } else {
-          // Add to allReports for receipt viewing
-          res.data.reports.forEach(r => {
-            if (!allReports.find(x => x.id === r.id)) allReports.push(r);
-          });
-          reportsContainer.innerHTML = res.data.reports.map(r => createReportCardHTML(r)).join('');
-        }
-      }
-  
-    } catch (err) {
-      console.error(err);
+
+    // Auto select user classroom if available
+    if (user && user.classroom) {
+      document.getElementById('report-classroom').value = user.classroom;
     }
+
+    // Render Today's Reports
+    const reportsContainer = document.getElementById('today-reports');
+    if (reportsContainer) {
+      if (!res.data.reports || res.data.reports.length === 0) {
+        reportsContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted)">ยังไม่มีประวัติการส่งงานในวันนี้</div>';
+      } else {
+        // Add to allReports for receipt viewing
+        res.data.reports.forEach(r => {
+          if (!allReports.find(x => x.id === r.id)) allReports.push(r);
+        });
+        reportsContainer.innerHTML = res.data.reports.map(r => createReportCardHTML(r)).join('');
+      }
+    }
+
+  } catch (err) {
+    console.error(err);
   }
+}
 
 // Load Schedule
 async function loadSchedule() {
@@ -88,11 +88,11 @@ async function loadSchedule() {
       tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">ยังไม่มีข้อมูลเวร</td></tr>';
       return;
     }
-    
+
     tbody.innerHTML = res.data.map(d => {
       const dateStr = new Date(d.duty_date).toLocaleDateString('th-TH');
       const shiftStr = d.shift === 'morning' ? '<span class="badge badge-yellow">เช้า</span>' : '<span class="badge badge-blue">บ่าย</span>';
-      
+
       let actionBtn = '';
       if (user && (user.role === 'admin' || user.role === 'committee')) {
         actionBtn = `<td class="admin-only"><button class="btn btn-danger btn-sm btn-icon" onclick="deleteDuty(${d.id})"><i class="fa-solid fa-trash"></i></button></td>`;
@@ -117,7 +117,7 @@ async function loadScoreboard() {
   const tbody = document.getElementById('scoreboard-tbody');
   try {
     const res = await api.get('/garbage/scoreboard');
-    
+
     tbody.innerHTML = res.data.map(r => `
       <tr>
         <td><div style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:bold">${r.rank}</div></td>
@@ -134,16 +134,16 @@ let allReports = [];
 
 function createReportCardHTML(r) {
   const submittedAt = new Date(r.submitted_at);
-  const timeStr = submittedAt.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+  const timeStr = submittedAt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
   const dateStr = submittedAt.toLocaleDateString('th-TH');
-  
+
   // Check if late
   let isLate = false;
   if (r.shift === 'morning' && (submittedAt.getHours() > 12 || (submittedAt.getHours() === 12 && submittedAt.getMinutes() > 30))) isLate = true;
   if (r.shift === 'afternoon' && (submittedAt.getHours() > 15 || (submittedAt.getHours() === 15 && submittedAt.getMinutes() > 30))) isLate = true;
 
   const lateBadge = isLate ? '<span class="badge badge-red" style="position:absolute;top:10px;right:10px">ส่งช้า</span>' : '';
-  
+
   let statusBadge = '';
   if (r.status === 'pending') statusBadge = '<span class="badge badge-yellow">รอตรวจ</span>';
   else if (r.status === 'completed') statusBadge = '<span class="badge badge-green">ผ่าน</span>';
@@ -186,12 +186,12 @@ async function loadReports() {
     res.data.forEach(r => {
       if (!allReports.find(x => x.id === r.id)) allReports.push(r);
     });
-    
+
     if (res.data.length === 0) {
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center">ไม่มีประวัติการส่งงาน</div>';
       return;
     }
-    
+
     grid.innerHTML = res.data.map(r => createReportCardHTML(r)).join('');
   } catch (err) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:red">โหลดข้อมูลไม่สำเร็จ</div>';
@@ -203,20 +203,20 @@ async function submitReport() {
   const btn = document.getElementById('submit-report-btn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังส่ง...';
-  
+
   const formData = new FormData();
   formData.append('image', selectedFile);
   formData.append('classroom', document.getElementById('report-classroom').value);
   const dutyId = document.getElementById('report-duty-id').value;
   if (dutyId) formData.append('duty_id', dutyId);
-  
+
   const coworkers = [
     document.getElementById('coworker-1').value.trim(),
     document.getElementById('coworker-2').value.trim(),
     document.getElementById('coworker-3').value.trim()
   ].filter(c => c !== '');
   if (coworkers.length > 0) formData.append('co_workers', JSON.stringify(coworkers));
-  
+
   try {
     const res = await api.postForm('/garbage/report', formData);
     showToast('ส่งงานสำเร็จ! รอการตรวจสอบ', 'success');
@@ -235,9 +235,9 @@ async function saveDuty() {
   const date = document.getElementById('duty-date').value;
   const shift = document.getElementById('duty-shift').value;
   const classroom = document.getElementById('duty-classroom').value;
-  
+
   if (!date || !shift || !classroom) return showToast('กรุณากรอกข้อมูลให้ครบ', 'error');
-  
+
   try {
     await api.post('/garbage/schedule', {
       duties: [{ date, shift, classroom }]
@@ -274,17 +274,17 @@ async function updateReport(id, status) {
 function showReceipt(id) {
   const r = allReports.find(x => x.id === id);
   if (!r) return;
-  
+
   const submittedAt = new Date(r.submitted_at);
-  
+
   document.getElementById('rec-id').textContent = 'RC-' + String(r.id).padStart(5, '0');
   document.getElementById('rec-date').textContent = submittedAt.toLocaleDateString('th-TH');
-  document.getElementById('rec-time').textContent = submittedAt.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+  document.getElementById('rec-time').textContent = submittedAt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
   document.getElementById('rec-room').textContent = r.classroom;
   document.getElementById('rec-shift').textContent = r.shift === 'morning' ? 'เช้า' : (r.shift === 'afternoon' ? 'บ่าย' : 'ช่วยงานพิเศษ');
-  
+
   document.getElementById('rec-main-name').textContent = '1. ' + r.reporter_name + ' (ผู้ส่ง)';
-  
+
   let coworkersHtml = '';
   if (r.co_workers) {
     try {
@@ -292,27 +292,27 @@ function showReceipt(id) {
       cw.forEach((name, idx) => {
         coworkersHtml += `<div>${idx + 2}. ${name}</div>`;
       });
-    } catch(e){}
+    } catch (e) { }
   }
   document.getElementById('rec-coworkers').innerHTML = coworkersHtml;
-  
+
   let statusText = 'รอตรวจสอบ';
   let statusColor = 'var(--text-muted)';
   if (r.status === 'completed') { statusText = 'ผ่าน'; statusColor = 'var(--success)'; }
   else if (r.status === 'not_clean') { statusText = 'ไม่เรียบร้อย'; statusColor = 'var(--danger)'; }
   else if (r.status === 'extra_help') { statusText = 'ช่วยพิเศษ'; statusColor = 'var(--primary)'; }
   else if (r.status === 'missed') { statusText = 'ขาดเวร'; statusColor = 'var(--danger)'; }
-  
+
   document.getElementById('rec-status').textContent = statusText;
   document.getElementById('rec-status').style.color = statusColor;
-  
+
   openModal('receipt-modal');
 }
 
 function printReceipt() {
   const content = document.getElementById('receipt-content').outerHTML;
   const originalBody = document.body.innerHTML;
-  
+
   document.body.innerHTML = `
     <div style="display:flex;justify-content:center;align-items:flex-start;padding:2rem;">
       ${content}
